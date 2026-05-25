@@ -164,15 +164,7 @@
         </div>
     </div>
 
-    <!-- Location -->
-    <div id="screen-location" class="app-screen">
-        <div class="auth-container" style="padding-top: 80px;">
-            <h1 class="auth-title">أضف عنوانك الأول 📍</h1>
-            <button class="btn btn-primary" onclick="window.manualLocation()">إدخال العنوان</button>
-        </div>
-    </div>
-
-    <!-- Home Screen -->
+      <!-- Home Screen -->
     <div id="screen-home" class="app-screen">
         <header>
             <div class="header-top">
@@ -1804,7 +1796,7 @@
             btn.style.display = 'block'; loader.style.display = 'none';
         };
         
-        // دالة الـ OTP الآمنة
+        // دالة الـ OTP الآمنة (تم تخطي شاشة العنوان)
         window.verifyOTP = function() {
             const btn = document.getElementById('btn-otp'); const loader = document.getElementById('otp-loader');
             if (document.getElementById('otpInput').value === "1234") {
@@ -1812,13 +1804,10 @@
                 setTimeout(() => {
                     try {
                         btn.style.display = 'block'; loader.style.display = 'none';
-                        if(!window.userAddresses || window.userAddresses.length === 0) {
-                            window.showScreen('screen-location', false);
-                        } else { 
-                            window.updateAddressUI(); 
-                            window.showScreen('screen-home', true); 
-                            window.startBannerSlider(); 
-                        }
+                        // الدخول للرئيسية مباشرة بدون طلب العنوان
+                        window.updateAddressUI(); 
+                        window.showScreen('screen-home', true); 
+                        window.startBannerSlider(); 
                     } catch(e) { console.log(e); window.showScreen('screen-home', true); }
                 }, 1000);
             } else alert("كود خاطئ! اكتب 1234");
