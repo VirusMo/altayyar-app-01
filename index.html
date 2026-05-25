@@ -39,7 +39,6 @@
         .cart-icon-img { width: 28px; height: 28px; }
         .cart-badge { position: absolute; top: -5px; right: -5px; background: #FF3B30; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; transition: all 0.3s; }
         
-        /* أنيميشن السلة عند إضافة منتج */
         @keyframes flashRed {
             0% { transform: scale(1); background-color: #FF3B30; box-shadow: 0 0 0 0 rgba(255,59,48,0.7); }
             50% { transform: scale(1.4); background-color: #ff0000; box-shadow: 0 0 10px 10px rgba(255,59,48,0); }
@@ -164,7 +163,7 @@
         </div>
     </div>
 
-      <!-- Home Screen -->
+    <!-- Home Screen -->
     <div id="screen-home" class="app-screen">
         <header>
             <div class="header-top">
@@ -182,7 +181,7 @@
             </div>
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="ابحث عن أكلة، منتج، شيبسي..." oninput="window.performSearch()">
+                <input type="text" id="searchInput" dir="auto" autocomplete="off" spellcheck="false" placeholder="ابحث عن أكلة، منتج، شيبسي..." onkeyup="window.performSearch()">
             </div>
         </header>
 
@@ -217,16 +216,7 @@
             </div>
 
             <h3 class="section-title">المحلات المتاحة للطلب <span style="font-size:12px; color:var(--primary); cursor:pointer;" onclick="window.filterShops('all')">عرض الكل</span></h3>
-            <div class="shops-scroll" id="shops-list">
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('تكه كريب ابو وعد')"><div class="img-box"><img src="images/covers/cover_taka.jpg" onerror="this.src='https://placehold.co/70'"></div><span>تكه كريب</span></div>
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('مطعم الهندي')"><div class="img-box"><img src="images/covers/cover_hindi.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الهندي</span></div>
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('ابن البلد')"><div class="img-box"><img src="images/covers/cover_ibn_albalad.jpg" onerror="this.src='https://placehold.co/70'"></div><span>ابن البلد</span></div>
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('بيتزا الأصدقاء')"><div class="img-box"><img src="images/covers/cover_friends.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الأصدقاء</span></div>
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('كشري الارزاق بالله')"><div class="img-box"><img src="images/covers/cover_arzak.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الارزاق بالله</span></div>
-                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('كبداكي وكبده رده')"><div class="img-box"><img src="images/covers/cover_kabdaky.jpg" onerror="this.src='https://placehold.co/70'"></div><span>كبداكي</span></div>
-                <div class="shop-circle" data-cat="sweets" onclick="window.openShop('وافيل وفليانو')"><div class="img-box"><img src="images/covers/cover_wafeliano.jpg" onerror="this.src='https://placehold.co/70'"></div><span>وفليانو</span></div>
-                <div class="shop-circle" data-cat="market" onclick="window.openShop('سوبر ماركت الاستاذ')"><div class="img-box"><img src="images/covers/cover_market.jpg" onerror="this.src='https://placehold.co/70'"></div><span>ماركت الأستاذ</span></div>
-            </div>
+            <div class="shops-scroll" id="shops-list"></div>
         </div>
     </div>
 
@@ -251,7 +241,7 @@
         </div>
     </div>
 
-    <!-- Pharmacy Screen (تمت التعديلات هنا للصورة) -->
+    <!-- Pharmacy Screen -->
     <div id="screen-pharmacy" class="app-screen">
         <div class="page-header">
             <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-home')" style="cursor: pointer;"></i>
@@ -263,18 +253,15 @@
             <label class="btn btn-outline" style="display:flex; flex-direction:column; gap:10px; padding:20px; margin-bottom:15px; cursor:pointer;">
                 <i class="fa-solid fa-camera" style="font-size:30px;"></i>
                 <span>التقط صورة بالكاميرا</span>
-                <!-- capture="environment" تفتح الكاميرا فوراً -->
                 <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="window.uploadPharmacyMedia(this)">
             </label>
             
             <label class="btn btn-outline" style="display:flex; flex-direction:column; gap:10px; padding:20px; margin-bottom:15px; cursor:pointer; border-color:#2196F3; color:#2196F3;">
                 <i class="fa-solid fa-image" style="font-size:30px;"></i>
                 <span>اختر صورة من المعرض</span>
-                <!-- يفتح المعرض لاختيار صورة -->
                 <input type="file" accept="image/*" style="display:none;" onchange="window.uploadPharmacyMedia(this)">
             </label>
 
-            <!-- حالة رفع الصورة -->
             <div id="pharmacy-upload-loader" class="loader" style="margin-bottom: 15px; display: none;"></div>
             <p id="pharmacy-upload-status" style="color:var(--primary); font-weight:bold; font-size:13px; margin-bottom:10px; display:none;">✅ تم إرفاق الصورة وجاهزة للإرسال</p>
 
@@ -299,7 +286,7 @@
         </div>
     </div>
 
-    <!-- Account (تم إضافة زر تعديل البيانات) -->
+    <!-- Account -->
     <div id="screen-account" class="app-screen">
         <div class="page-header">حسابي</div>
         <div style="padding: 20px; text-align: center; background: var(--white);">
@@ -328,7 +315,6 @@
                 <i class="fa-solid fa-lock" style="color:white;"></i> إدارة المنيو
             </div>
 
-            <!-- زر تسجيل الخروج (تم تحسينه) -->
             <div class="account-item" style="color: red;" onclick="window.logoutUser()">
                 <i class="fa-solid fa-arrow-right-from-bracket" style="width: 25px; text-align: center; color: red;"></i> تسجيل الخروج
             </div>
@@ -364,7 +350,6 @@
         </div>
         <div style="padding: 15px;">
             
-            <!-- إضافة بانرات -->
             <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
                 <h4 style="margin-bottom: 10px; color: var(--primary-dark);">إدارة البانرات</h4>
                 <div style="display:flex; gap:10px;">
@@ -380,27 +365,34 @@
                 </div>
             </div>
 
-            <!-- إضافة محل جديد -->
             <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
                 <h4 style="margin-bottom: 10px; color: var(--primary-dark);">إضافة محل جديد</h4>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="new-shop-name" placeholder="اسم المحل" class="input-group" style="margin:0; flex:2; padding:10px; border-radius:8px;">
-                    <button class="btn btn-primary" style="margin:0; flex:1; padding:10px; border-radius:8px;" onclick="window.addNewShop()">إضافة</button>
+                <div style="display:flex; flex-wrap: wrap; gap:10px;">
+                    <input type="text" id="new-shop-name" placeholder="اسم المحل" class="input-group" style="margin:0; flex:1; min-width:40%; padding:10px; border-radius:8px;">
+                    <select id="new-shop-cat" class="input-group" style="margin:0; flex:1; min-width:40%; padding:10px; border-radius:8px;">
+                        <option value="restaurant">مطعم</option>
+                        <option value="sweets">حلويات</option>
+                        <option value="market">ماركت</option>
+                    </select>
+                    <label class="btn-outline" style="flex:1; min-width:40%; padding:10px; border-radius:8px; text-align:center; cursor:pointer; font-weight:bold;">
+                        <i class="fa-solid fa-image"></i> لوجو المحل
+                        <input type="file" id="new-shop-logo" accept="image/*" style="display:none;">
+                    </label>
+                    <button class="btn btn-primary" style="margin:0; flex:1; min-width:40%; padding:10px; border-radius:8px;" onclick="window.addNewShop()">إضافة المحل</button>
                 </div>
+                <div id="shop-upload-loader" class="loader" style="margin-top:10px; display:none;"></div>
             </div>
             
             <p style="text-align:center; font-size:14px; margin-bottom:10px; font-weight:bold; color:var(--text-main);">اختر المحل لتعديل أقسامه ومنتجاته:</p>
             
-            <select id="admin-shop-select" class="input-group" style="width:100%; padding:12px; font-weight:bold; font-family:'Tajawal';" onchange="window.loadAdminMenu()">
-                <option value="تكه كريب ابو وعد">تكه كريب ابو وعد</option>
-                <option value="بيتزا الأصدقاء">بيتزا الأصدقاء</option>
-                <option value="وافيل وفليانو">وافيل وفليانو</option>
-                <option value="كشري الارزاق بالله">كشري الارزاق بالله</option>
-                <option value="كبداكي وكبده رده">كبداكي وكبده رده</option>
-                <option value="ابن البلد">ابن البلد</option>
-                <option value="مطعم الهندي">مطعم الهندي</option>
-                <option value="سوبر ماركت الاستاذ">سوبر ماركت الاستاذ</option>
-            </select>
+            <!-- تم إضافة زرار مسح المحل هنا -->
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <select id="admin-shop-select" class="input-group" style="margin:0; flex:3; padding:12px; font-weight:bold; font-family:'Tajawal';" onchange="window.loadAdminMenu()">
+                </select>
+                <button class="btn btn-danger" style="margin:0; flex:1; padding:10px; border-radius:8px; font-size:14px;" onclick="window.deleteCurrentShop()">
+                    <i class="fa-solid fa-trash"></i> حذف المحل
+                </button>
+            </div>
             
             <button class="btn btn-outline" onclick="window.showAddProductForm()" style="margin-bottom:20px; border-style:dashed;">
                 <i class="fa-solid fa-plus"></i> إضافة قسم / منتج
@@ -441,8 +433,19 @@
         </div>
     </div>
 
-    <!-- 🌟 قاعدة البيانات المحلية المفرودة 🌟 -->
+    <!-- 🌟 قاعدة البيانات والمحلات (بقت ديناميكية) 🌟 -->
     <script>
+        window.activeShops = [
+            { name: "تكه كريب ابو وعد", cat: "restaurant", img: "images/covers/cover_taka.jpg" },
+            { name: "مطعم الهندي", cat: "restaurant", img: "images/covers/cover_hindi.jpg" },
+            { name: "ابن البلد", cat: "restaurant", img: "images/covers/cover_ibn_albalad.jpg" },
+            { name: "بيتزا الأصدقاء", cat: "restaurant", img: "images/covers/cover_friends.jpg" },
+            { name: "كشري الارزاق بالله", cat: "restaurant", img: "images/covers/cover_arzak.jpg" },
+            { name: "كبداكي وكبده رده", cat: "restaurant", img: "images/covers/cover_kabdaky.jpg" },
+            { name: "وافيل وفليانو", cat: "sweets", img: "images/covers/cover_wafeliano.jpg" },
+            { name: "سوبر ماركت الاستاذ", cat: "market", img: "images/covers/cover_market.jpg" }
+        ];
+
         window.shopMenus = {
             "تكه كريب ابو وعد": [
                 { 
@@ -1167,7 +1170,29 @@
         window.cart = []; window.userAddresses = []; window.currentAddressIndex = 0;
         window.userPhone = ""; window.userName = ""; window.isCheckoutAlert = false;
         
+        window.renderHomeShops = function() {
+            const list = document.getElementById('shops-list');
+            list.innerHTML = "";
+            window.activeShops.forEach(shop => {
+                list.innerHTML += `<div class="shop-circle" data-cat="${shop.cat}" onclick="window.openShop('${shop.name}')">
+                    <div class="img-box"><img src="${shop.img}" onerror="this.src='https://placehold.co/70?text=Logo'"></div>
+                    <span>${shop.name}</span>
+                </div>`;
+            });
+            window.updateAdminShopSelect();
+        };
+
+        window.updateAdminShopSelect = function() {
+            const select = document.getElementById('admin-shop-select');
+            select.innerHTML = "";
+            window.activeShops.forEach(shop => {
+                select.innerHTML += `<option value="${shop.name}">${shop.name}</option>`;
+            });
+        };
+
         window.onload = function() {
+            window.renderHomeShops(); 
+
             if(localStorage.getItem('isLoggedIn') === 'true') {
                 window.userPhone = localStorage.getItem('userPhone') || "";
                 window.userName = localStorage.getItem('userName') || "العميل";
@@ -1241,7 +1266,6 @@
             if(screenId === 'screen-admin') window.loadAdminMenu();
         }
 
-        // ---------- تعديل بيانات المستخدم ----------
         window.editProfile = async function() {
             let newName = prompt("تعديل الاسم بالكامل:", window.userName);
             if(newName === null) return; 
@@ -1319,24 +1343,77 @@
 
         window.addNewShop = async function() {
             const newShopName = document.getElementById('new-shop-name').value.trim();
+            const newShopCat = document.getElementById('new-shop-cat').value;
+            const logoInput = document.getElementById('new-shop-logo');
+            
             if(!newShopName) return alert("اكتب اسم المحل الجديد");
-            
-            if(!window.shopMenus[newShopName]) {
-                window.shopMenus[newShopName] = [];
-            }
-            
-            let select = document.getElementById('admin-shop-select');
-            let option = document.createElement("option");
-            option.text = newShopName; option.value = newShopName;
-            select.add(option); select.value = newShopName;
+            if(logoInput.files.length === 0) return alert("برجاء اختيار لوجو للمحل");
 
-            if(window.saveShopToFirebase) {
-                await window.saveShopToFirebase(newShopName, window.shopMenus[newShopName]);
+            document.getElementById('shop-upload-loader').style.display = 'block';
+
+            const file = logoInput.files[0];
+            const formData = new FormData();
+            formData.append("image", file);
+            const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const logoUrl = data.data.url; 
+                    
+                    window.activeShops.push({ name: newShopName, cat: newShopCat, img: logoUrl });
+                    window.renderHomeShops();
+
+                    if(!window.shopMenus[newShopName]) {
+                        window.shopMenus[newShopName] = [];
+                    }
+
+                    if(window.saveShopToFirebase) {
+                        await window.saveShopToFirebase(newShopName, window.shopMenus[newShopName]);
+                        if(window.saveShopsListToFirebase) await window.saveShopsListToFirebase(window.activeShops);
+                    }
+
+                    window.showToast("تم إنشاء المحل وإضافته للرئيسية ✅");
+                    document.getElementById('new-shop-name').value = "";
+                    logoInput.value = "";
+                    window.loadAdminMenu();
+                } else {
+                    alert("فشل رفع اللوجو");
+                }
+            } catch (error) { 
+                alert("حدث خطأ أثناء الرفع."); 
+            } finally {
+                document.getElementById('shop-upload-loader').style.display = 'none';
             }
-            window.showToast("تم إنشاء المحل بنجاح ✅");
-            document.getElementById('new-shop-name').value = "";
-            window.loadAdminMenu();
         };
+
+        // دالة مسح المحل بالكامل
+        window.deleteCurrentShop = async function() {
+            const shopName = document.getElementById('admin-shop-select').value;
+            if(!shopName) return;
+
+            if(confirm(`هل أنت متأكد من حذف محل "${shopName}" بالكامل بجميع أقسامه ومنتجاته؟\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+
+                // مسح من المصفوفة المحلية للمحلات
+                window.activeShops = window.activeShops.filter(shop => shop.name !== shopName);
+
+                // مسح من منيو المحلات المفتوحة
+                delete window.shopMenus[shopName];
+
+                // تحديث الواجهة
+                window.renderHomeShops(); 
+                
+                // مسح من فايربيز
+                if(window.deleteShopFromFirebase) {
+                    await window.deleteShopFromFirebase(shopName, window.activeShops);
+                }
+
+                window.showToast("تم حذف المحل بنجاح 🗑️");
+                window.loadAdminMenu(); 
+            }
+        }
 
         window.editCategoryName = async function(shopName, catIndex) {
             let oldName = window.shopMenus[shopName][catIndex].category;
@@ -1417,7 +1494,6 @@
             }
         };
 
-        // ---------- إدارة العناوين ----------
         window.renderAddresses = function() {
             const list = document.getElementById('addresses-list'); list.innerHTML = "";
             if(window.userAddresses) {
@@ -1445,7 +1521,6 @@
             setTimeout(() => window.navTo('screen-home', document.getElementById('nav-home')), 300); 
         }
 
-        // ---------- فلترة الأقسام والبحث ----------
         window.filterShops = function(category) {
             document.getElementById('search-results-area').style.display = 'none'; document.getElementById('home-content-area').style.display = 'block'; document.getElementById('searchInput').value = "";
             document.querySelectorAll('.shop-circle').forEach(shop => { if(category === 'all' || shop.getAttribute('data-cat') === category) shop.style.display = 'block'; else shop.style.display = 'none'; });
@@ -1479,7 +1554,6 @@
             if(matchCount === 0) container.innerHTML = `<div class="empty-state">لا توجد نتائج مطابقة لبحثك</div>`;
         }
 
-        // ---------- عرض المنيو ----------
         window.openShop = function(shopName) {
             document.getElementById('shop-title').innerText = shopName; const container = document.getElementById('menu-container'); container.innerHTML = "";
             let folderName = "market";
@@ -1502,10 +1576,9 @@
             window.navTo('screen-shop', null);
         }
 
-        // ---------- الصيدلية ورفع الصور ----------
         window.openPharmacy = function() { document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); window.showScreen('screen-pharmacy'); }
         
-        window.pharmacyMediaUrl = ""; // لحفظ رابط الصورة المرفوعة للروشتة
+        window.pharmacyMediaUrl = ""; 
         
         window.uploadPharmacyMedia = async function(inputElement) {
             const file = inputElement.files[0];
@@ -1557,14 +1630,12 @@
             
             window.open(`https://wa.me/201123153850?text=${encodeURIComponent(msg)}`, '_blank'); 
             
-            // إعادة ضبط بعد الإرسال
             window.pharmacyMediaUrl = "";
             document.getElementById('pharmacy-upload-status').style.display = 'none';
             document.getElementById('pharmacy-notes').value = "";
             window.navTo('screen-home', document.getElementById('nav-home'));
         }
 
-        // ---------- السلة ----------
         window.showToast = function(message) { const toast = document.getElementById("toast"); toast.innerText = message; toast.className = "show"; setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500); }
 
         window.addToCart = function(name, selectId, shopName) {
@@ -1573,12 +1644,11 @@
             let finalName = name + sizeText; let existing = window.cart.find(i => i.name === finalName && i.shop === shopName);
             if(existing) existing.qty++; else window.cart.push({ name: finalName, price: price, qty: 1, shop: shopName });
             
-            // تحديث الرقم وعمل الأنيميشن (الفلاش الأحمر)
             const badge = document.getElementById('cart-count');
             badge.innerText = window.cart.reduce((sum, item) => sum + item.qty, 0);
             
             badge.classList.remove('cart-flash');
-            void badge.offsetWidth; // Trigger reflow to restart animation
+            void badge.offsetWidth; 
             badge.classList.add('cart-flash');
 
             window.showToast("تم الإضافة للسلة بنجاح ✅");
@@ -1619,7 +1689,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
         
         const firebaseConfig = {
           apiKey: "AIzaSyDVJAyK5CHqSK98MQic0l3bCWKBJGe4LAw",
@@ -1634,7 +1704,19 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // دالة تحديث اسم العميل ورقمه في فايربيز
+        // دالة مسح المحل من فايربيز
+        window.deleteShopFromFirebase = async function(shopName, updatedShopsArray) {
+            try {
+                // مسح الدوكيومنت بتاع المنيو
+                await deleteDoc(doc(db, "menus", shopName));
+                // تحديث لستة المحلات في الإعدادات
+                await setDoc(doc(db, "settings", "appSettings"), { shopsList: updatedShopsArray }, { merge: true });
+            } catch(e) {
+                console.error("Error deleting shop from Firebase:", e);
+                alert("حدث خطأ أثناء الحذف من السيرفر.");
+            }
+        };
+
         window.updateUserProfileInFirebase = async function(newName, newPhone) {
             const user = auth.currentUser;
             if(user) {
@@ -1644,7 +1726,6 @@
             }
         };
 
-        // جلب البانرات من فايربيز
         window.fetchSettingsFromFirebase = async function() {
             try {
                 const docSnap = await getDoc(doc(db, "settings", "appSettings"));
@@ -1653,11 +1734,21 @@
                     if(data.banner1) document.getElementById('home-banner-1').src = data.banner1;
                     if(data.banner2) document.getElementById('home-banner-2').src = data.banner2;
                     if(data.banner3) document.getElementById('home-banner-3').src = data.banner3;
+                    
+                    if(data.shopsList) {
+                        window.activeShops = data.shopsList;
+                        window.renderHomeShops();
+                    }
                 }
             } catch(e) {}
         };
 
-        // سحب المنيو من السيرفر عند الفتح وتحديث الـ window.shopMenus ليكون متطابق مع الداتا بيز
+        window.saveShopsListToFirebase = async function(shopsArray) {
+            try {
+                await setDoc(doc(db, "settings", "appSettings"), { shopsList: shopsArray }, { merge: true });
+            } catch(e) {}
+        };
+
         window.fetchMenuFromFirebase = async function() {
             try {
                 const querySnapshot = await getDocs(collection(db, "menus"));
@@ -1666,21 +1757,15 @@
                         window.shopMenus[doc.id] = doc.data().categories; 
                     });
                 }
-            } catch (e) {
-                console.error("خطأ في قراءة المنيو:", e);
-            }
+            } catch (e) { console.error("خطأ في قراءة المنيو:", e); }
         };
 
-        // حفظ مطعم معين في السيرفر 
         window.saveShopToFirebase = async function(shopName, categoriesData) {
             try {
                 await setDoc(doc(db, "menus", shopName), { categories: categoriesData });
-            } catch(e) {
-                console.error("Error saving shop to Firebase:", e);
-            }
+            } catch(e) { console.error("Error saving shop to Firebase:", e); }
         };
 
-        // تسجيل الخروج بشكل قوي وآمن
         window.logoutUser = function() {
             if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
                 localStorage.clear();
@@ -1694,14 +1779,12 @@
                 window.cart = [];
                 document.getElementById('cart-count').innerText = "0";
 
-                // نقله فورا لصفحة الدخول
                 window.showScreen('screen-login', false);
 
                 try { signOut(auth); } catch(e) {}
             }
         };
 
-        // الديفولت انه يكون وضع تسجيل الدخول
         window.isLoginMode = true; 
         
         window.toggleAuthMode = function() {
@@ -1735,7 +1818,7 @@
             btn.style.display = 'none'; loader.style.display = 'block';
 
             try {
-                if (!window.isLoginMode) { // وضع إنشاء الحساب
+                if (!window.isLoginMode) { 
                     const name = document.getElementById('regName').value.trim();
                     const phone = document.getElementById('regPhone').value.trim();
                     if(!name || !phone) { alert("برجاء إدخال الاسم ورقم الهاتف."); btn.style.display = 'block'; loader.style.display = 'none'; return; }
@@ -1745,21 +1828,16 @@
                     
                     await setDoc(doc(db, "users", user.uid), { name: name, phone: phone, email: email, addresses: [] });
 
-                    window.userName = name; 
-                    window.userPhone = phone; 
-                    window.userAddresses = [];
-                    
-                    localStorage.setItem('userName', name); 
-                    localStorage.setItem('userPhone', phone);
-                    localStorage.setItem('userEmail', email); 
-                    localStorage.setItem('isLoggedIn', 'true');
+                    window.userName = name; window.userPhone = phone; window.userAddresses = [];
+                    localStorage.setItem('userName', name); localStorage.setItem('userPhone', phone);
+                    localStorage.setItem('userEmail', email); localStorage.setItem('isLoggedIn', 'true');
                     
                     document.getElementById('acc-name-display').innerText = name;
                     document.getElementById('acc-phone-display').innerText = phone;
                     
                     window.showScreen('screen-otp', false);
 
-                } else { // وضع تسجيل الدخول
+                } else {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
 
@@ -1773,9 +1851,7 @@
                             window.userAddresses = userData.addresses;
                             localStorage.setItem('userAddresses', JSON.stringify(window.userAddresses));
                             localStorage.setItem('currentAddressIndex', 0);
-                        } else {
-                            window.userAddresses = [];
-                        }
+                        } else { window.userAddresses = []; }
                     }
 
                     localStorage.setItem('userEmail', email); localStorage.setItem('isLoggedIn', 'true');
@@ -1787,7 +1863,6 @@
                     window.showScreen('screen-otp', false);
                 }
             } catch (error) {
-                console.error(error);
                 if(error.code === 'auth/email-already-in-use') alert("هذا البريد مسجل مسبقاً، برجاء تسجيل الدخول.");
                 else if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') alert("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
                 else alert("حدث خطأ: " + error.message);
@@ -1796,7 +1871,6 @@
             btn.style.display = 'block'; loader.style.display = 'none';
         };
         
-        // دالة الـ OTP الآمنة (تم تخطي شاشة العنوان)
         window.verifyOTP = function() {
             const btn = document.getElementById('btn-otp'); const loader = document.getElementById('otp-loader');
             if (document.getElementById('otpInput').value === "1234") {
@@ -1804,39 +1878,35 @@
                 setTimeout(() => {
                     try {
                         btn.style.display = 'block'; loader.style.display = 'none';
-                        // الدخول للرئيسية مباشرة بدون طلب العنوان
-                        window.updateAddressUI(); 
-                        window.showScreen('screen-home', true); 
-                        window.startBannerSlider(); 
-                    } catch(e) { console.log(e); window.showScreen('screen-home', true); }
+                        
+                        if(window.fetchMenuFromFirebase) window.fetchMenuFromFirebase();
+                        if(window.fetchSettingsFromFirebase) window.fetchSettingsFromFirebase();
+
+                        if(!window.userAddresses || window.userAddresses.length === 0) {
+                            window.showScreen('screen-location', false);
+                        } else { 
+                            window.updateAddressUI(); window.showScreen('screen-home', true); window.startBannerSlider(); 
+                        }
+                    } catch(e) { window.showScreen('screen-home', true); }
                 }, 1000);
             } else alert("كود خاطئ! اكتب 1234");
         }
 
-       // رفع صورة المنتج لـ ImgBB
        window.uploadImageToFirebase = async function(inputElement, shopName, catIndex, itemIndex) {
             const file = inputElement.files[0];
             if(!file) return;
-
             window.showToast("جاري رفع الصورة... ⏳");
-            
-            const formData = new FormData();
-            formData.append("image", file);
+            const formData = new FormData(); formData.append("image", file);
             const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
-
             try {
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
                 const data = await response.json();
-                
                 if (data.success) {
-                    const imageUrl = data.data.url; 
-                    window.shopMenus[shopName][catIndex].items[itemIndex].img = imageUrl;
+                    window.shopMenus[shopName][catIndex].items[itemIndex].img = data.data.url; 
                     await setDoc(doc(db, "menus", shopName), { categories: window.shopMenus[shopName] });
                     window.showToast("تم تحديث الصورة بنجاح ✅");
                     window.loadAdminMenu(); 
-                } else {
-                    alert("حدث خطأ من سيرفر الصور.");
-                }
+                } else alert("حدث خطأ من سيرفر الصور.");
             } catch (error) { alert("حدث خطأ أثناء الرفع، تأكد من الإنترنت."); }
         };
 
@@ -1844,46 +1914,30 @@
             window.showToast("جاري رفع المنتج الجديد... ⏳");
             const formData = new FormData(); formData.append("image", file);
             const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96";
-
             try {
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
                 const data = await response.json();
-                
-                if(data.success) {
-                    const downloadURL = data.data.url;
-                    window.addProductToMenu(shopName, catName, itemName, itemPrice, downloadURL);
-                } else {
-                    alert("فشل رفع صورة المنتج الجديد.");
-                    document.getElementById('upload-loader').style.display = 'none';
-                }
-            } catch (error) {
-                alert("حدث خطأ أثناء الرفع.");
-                document.getElementById('upload-loader').style.display = 'none';
-            }
+                if(data.success) window.addProductToMenu(shopName, catName, itemName, itemPrice, data.data.url);
+                else { alert("فشل رفع صورة المنتج الجديد."); document.getElementById('upload-loader').style.display = 'none'; }
+            } catch (error) { alert("حدث خطأ أثناء الرفع."); document.getElementById('upload-loader').style.display = 'none'; }
         };
 
-        // رفع صور البانرات للإعدادات
         window.uploadBanner = async function(inputElement, bannerNumber) {
             const file = inputElement.files[0];
             if(!file) return;
-
             window.showToast(`جاري رفع بانر ${bannerNumber}... ⏳`);
             const formData = new FormData(); formData.append("image", file);
             const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
-
             try {
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
                 const data = await response.json();
-                
                 if (data.success) {
-                    const bannerUrl = data.data.url;
-                    await setDoc(doc(db, "settings", "appSettings"), { [`banner${bannerNumber}`]: bannerUrl }, { merge: true });
-                    document.getElementById(`home-banner-${bannerNumber}`).src = bannerUrl;
+                    await setDoc(doc(db, "settings", "appSettings"), { [`banner${bannerNumber}`]: data.data.url }, { merge: true });
+                    document.getElementById(`home-banner-${bannerNumber}`).src = data.data.url;
                     window.showToast("تم تغيير البانر بنجاح ✅");
                 }
             } catch (error) { alert("حدث خطأ أثناء رفع البانر."); }
         };
-
     </script>
 </body>
 </html>
