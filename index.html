@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تطبيق الطيار</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #4CAF50; --primary-dark: #388E3C; --bg-color: #F8F9FA; --white: #ffffff; --text-main: #2C3E50; --text-muted: #7F8C8D; --border: #E0E0E0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #333; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; }
+        #app-wrapper { width: 100%; max-width: 480px; background-color: var(--bg-color); min-height: 100vh; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-x: hidden; padding-bottom: 80px; }
+        .app-screen { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; background: var(--bg-color); }
+        .app-screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Auth UI */
+        .auth-container { padding: 40px 20px; text-align: center; background: var(--white); min-height: 100vh;}
+        .auth-logo { width: 120px; height: 120px; object-fit: contain; margin-bottom: 20px; }
+        .auth-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+        .input-group { margin-bottom: 15px; text-align: right; }
+        .input-group input, .input-group select { width: 100%; padding: 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; background: var(--bg-color); font-family: 'Tajawal';}
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; transition: 0.2s;}
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-danger { background-color: #f44336; color: white; }
+        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .toggle-auth { color: var(--primary); font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block;}
+        
+        /* Header */
+        header { padding: 15px 20px; background: var(--white); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .user-greeting { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; cursor: pointer;}
+        .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .header-icons { display: flex; gap: 15px; align-items: center; position: relative; cursor: pointer; }
+        .cart-icon-img { width: 28px; height: 28px; }
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: #FF3B30; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; transition: all 0.3s; }
+        
+        /* أنيميشن السلة عند إضافة منتج */
+        @keyframes flashRed {
+            0% { transform: scale(1); background-color: #FF3B30; box-shadow: 0 0 0 0 rgba(255,59,48,0.7); }
+            50% { transform: scale(1.4); background-color: #ff0000; box-shadow: 0 0 10px 10px rgba(255,59,48,0); }
+            100% { transform: scale(1); background-color: #FF3B30; box-shadow: 0 0 0 0 rgba(255,59,48,0); }
+        }
+        .cart-flash { animation: flashRed 0.6s ease-out; }
+
+        .search-box { background: var(--bg-color); border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
+        .search-box input { border: none; background: none; outline: none; width: 100%; font-size: 14px; font-family: 'Tajawal'; }
+        
+        /* Banners */
+        .banner-container { margin: 15px 20px; border-radius: 15px; overflow: hidden; height: 140px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+        .banner-track { display: flex; height: 100%; transition: transform 0.5s ease-in-out; width: 100%; }
+        .banner-slide { min-width: 100%; height: 100%; flex-shrink: 0; }
+        .banner-slide img { width: 100%; height: 100%; object-fit: fill; }
+        .section-title { font-size: 18px; font-weight: 800; margin: 20px 20px 15px; display: flex; justify-content: space-between; align-items: center;}
+        
+        /* Categories */
+        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; }
+        .cat-card { background: var(--white); border-radius: 15px; padding: 20px 10px; text-align: center; font-weight: 800; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+        .cat-card:active { transform: scale(0.95); border-color: var(--primary); }
+        .cat-card img { width: 50px; height: 50px; margin-bottom: 10px; object-fit: contain; }
+        
+        /* Shops List */
+        .shops-scroll { display: flex; flex-wrap: wrap; padding: 0 15px 10px; gap: 10px; justify-content: center; }
+        .shop-circle { width: 30%; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s;}
+        .shop-circle .img-box { width: 70px; height: 70px; border-radius: 50%; background: var(--white); border: 2px solid var(--primary); margin: 0 auto 8px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.05);}
+        .shop-circle .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .shop-circle span { font-size: 12px; font-weight: 700; display: block; line-height: 1.2;}
+        
+        /* Menu */
+        .page-header { background: var(--white); padding: 15px 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; display: flex; gap: 15px; align-items: center;}
+        .menu-category { font-size: 16px; font-weight: 800; padding: 10px 20px; background: #e9ecef; margin-top: 10px; color: var(--primary-dark); display: flex; justify-content: space-between; align-items: center;}
+        .product-card { display: flex; background: var(--white); margin: 10px 20px; padding: 10px; border-radius: 12px; border: 1px solid var(--border); align-items: center; gap: 10px;}
+        .product-img { width: 70px; height: 70px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #eee; border: 1px solid var(--border);}
+        .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-details { flex: 1; }
+        .product-name { font-weight: 700; font-size: 14px; margin-bottom: 5px;}
+        .product-shop-name { font-size: 11px; color: var(--primary); margin-bottom: 5px; font-weight: bold;}
+        .product-price-select { width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Tajawal'; font-size: 13px; margin-bottom: 5px;}
+        .product-price { color: var(--primary-dark); font-weight: 800; font-size: 14px;}
+        .add-btn { background: var(--primary); color: white; border: none; width: 35px; height: 35px; border-radius: 8px; font-size: 20px; cursor: pointer; flex-shrink: 0; display:flex; justify-content:center; align-items:center;}
+        
+        /* Admin Dashboard Styles */
+        .admin-item-card { background: white; border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: right;}
+        .admin-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .admin-actions button, .admin-actions label { flex: 1; padding: 8px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-family: 'Tajawal'; color: white; text-align: center;}
+        .btn-edit { background-color: #2196F3; }
+        .btn-delete { background-color: #f44336; }
+        .preview-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; margin-left:10px; }
+        
+        /* General Elements */
+        .address-card { background: white; border: 1px solid var(--border); padding: 15px; margin: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
+        .address-card.selected { border: 2px solid var(--primary); background: #f0fdf4; }
+        .add-address-btn { border: 2px dashed var(--primary); background: transparent; color: var(--primary); margin: 15px 20px; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; font-weight: bold;}
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); z-index: 1000;}
+        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; width: 25%; }
+        .nav-item img { width: 24px; height: 24px; margin-bottom: 4px; filter: grayscale(100%); opacity: 0.6; transition: 0.3s;}
+        .nav-item span { font-size: 11px; font-weight: 700; display: block;}
+        .nav-item.active img { filter: grayscale(0%); opacity: 1; }
+        .nav-item.active span { color: var(--primary); }
+        .cart-total-bar { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--primary-dark); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 99;}
+        .cart-total-bar button { background: white; color: var(--primary-dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;}
+        .cart-item { display: flex; justify-content: space-between; background: var(--white); margin: 10px 20px; padding: 15px; border-radius: 12px; border: 1px solid var(--border); align-items: center;}
+        .qty-control { display: flex; gap: 10px; align-items: center; background: #eee; padding: 5px 10px; border-radius: 8px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--primary-dark); color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 10000; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+        .account-menu { background: var(--white); margin-top: 10px; }
+        .account-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; font-weight: 600; cursor: pointer; }
+        .admin-edit-box { background: #fff; border: 2px solid var(--primary); border-radius: 10px; padding: 15px; margin: 10px 20px; text-align: right;}
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+
+    <div id="toast">تم الإجراء بنجاح ✅</div>
+
+    <div class="modal-overlay" id="price-alert-modal">
+        <div class="modal-box">
+            <h3 style="color: #FF9800; margin-bottom: 10px;">تنبيه هام ⚠️</h3>
+            <p>أسعار المنتجات قد تتغير يومياً. سيتم إبلاغك بالتفاصيل كاملة عند تأكيد الطلب.</p>
+            <button class="btn btn-primary" onclick="window.closeModal()">حسناً، فهمت</button>
+        </div>
+    </div>
+
+    <!-- Login -->
+    <div id="screen-login" class="app-screen">
+        <div class="auth-container">
+            <img src="images/system/logo.png" alt="الطيار" class="auth-logo" onerror="this.src='https://placehold.co/120?text=Logo'">
+            <h1 class="auth-title" id="auth-title-text">تسجيل الدخول 👋</h1>
+            <p class="auth-sub" id="auth-sub-text" style="margin-bottom:20px;">سجل دخولك عشان تطلب أسرع دليفري في طبهار</p>
+            
+            <div id="register-fields" style="display: none;">
+                <div class="input-group"><input type="text" id="regName" placeholder="الاسم بالكامل"></div>
+                <div class="input-group"><input type="tel" id="regPhone" placeholder="رقم الهاتف (مثال: 01123153850)" maxlength="11"></div>
+            </div>
+            
+            <div class="input-group"><input type="email" id="authEmail" placeholder="البريد الإلكتروني (Email)"></div>
+            <div class="input-group"><input type="password" id="authPassword" placeholder="كلمة المرور (Password)"></div>
+            
+            <button class="btn btn-primary" id="btn-auth" onclick="window.processAuth()">دخول</button>
+            <div id="auth-loader" class="loader" style="margin-top:15px;"></div>
+            
+            <p class="toggle-auth" id="toggle-auth-btn" onclick="window.toggleAuthMode()">ليس لديك حساب؟ إنشاء حساب جديد</p>
+        </div>
+    </div>
+
+    <!-- OTP -->
+    <div id="screen-otp" class="app-screen">
+        <div class="auth-container">
+            <h1 class="auth-title">كود التفعيل 📩</h1>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">تم إرسال كود التأكيد.. (للتجربة اكتب 1234)</p>
+            <div class="input-group"><input type="number" id="otpInput" placeholder="أدخل الكود 1234"></div>
+            <button class="btn btn-primary" id="btn-otp" onclick="window.verifyOTP()">تأكيد الكود</button>
+            <div id="otp-loader" class="loader" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <!-- Location -->
+    <div id="screen-location" class="app-screen">
+        <div class="auth-container" style="padding-top: 80px;">
+            <h1 class="auth-title">أضف عنوانك الأول 📍</h1>
+            <button class="btn btn-primary" onclick="window.manualLocation()">إدخال العنوان</button>
+        </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="screen-home" class="app-screen">
+        <header>
+            <div class="header-top">
+                <div class="user-greeting" onclick="window.navTo('screen-addresses')">
+                    <img src="images/icons/nav_user.png" class="user-icon" onerror="this.src='https://placehold.co/40'">
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted);">توصيل إلى: (اضغط للتغيير)</div>
+                        <div id="user-address" style="font-size: 13px; font-weight: 800; color: var(--primary);">جاري التحميل...</div>
+                    </div>
+                </div>
+                <div class="header-icons" onclick="window.navTo('screen-cart')">
+                    <img src="images/icons/nav_cart.png" class="cart-icon-img" onerror="this.src='https://placehold.co/28'">
+                    <span class="cart-badge" id="cart-count">0</span>
+                </div>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="ابحث عن أكلة، منتج، شيبسي..." oninput="window.performSearch()">
+            </div>
+        </header>
+
+        <div id="search-results-area" style="display:none; padding-bottom: 20px;">
+            <div class="section-title">نتائج البحث: <span id="search-count" style="color:var(--primary); font-size:14px;"></span></div>
+            <div id="search-container"></div>
+        </div>
+
+        <div id="home-content-area">
+            <div class="banner-container">
+                <div class="banner-track" id="bannerTrack">
+                    <div class="banner-slide"><img id="home-banner-1" src="images/system/banner1.jpg" onerror="this.src='https://placehold.co/400x140?text=Banner+1'"></div>
+                    <div class="banner-slide"><img id="home-banner-2" src="images/system/banner2.jpg" onerror="this.src='https://placehold.co/400x140?text=Banner+2'"></div>
+                    <div class="banner-slide"><img id="home-banner-3" src="images/system/banner3.jpg" onerror="this.src='https://placehold.co/400x140?text=Banner+3'"></div>
+                </div>
+            </div>
+
+            <h3 class="section-title">الأقسام</h3>
+            <div class="cat-grid">
+                <div class="cat-card" onclick="window.filterShops('sweets')">
+                    <img src="images/icons/cat_sweets.png" onerror="this.src='https://placehold.co/50'"><div>حلويات</div>
+                </div>
+                <div class="cat-card" onclick="window.filterShops('restaurant')">
+                    <img src="images/icons/cat_restaurant.png" onerror="this.src='https://placehold.co/50'"><div>مطاعم</div>
+                </div>
+                <div class="cat-card" onclick="window.openPharmacy()">
+                    <img src="images/icons/cat_pharmacy.png" onerror="this.src='https://placehold.co/50'"><div>صيدلية</div>
+                </div>
+                <div class="cat-card" onclick="window.filterShops('market')">
+                    <img src="images/icons/cat_market.png" onerror="this.src='https://placehold.co/50'"><div>ماركت</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">المحلات المتاحة للطلب <span style="font-size:12px; color:var(--primary); cursor:pointer;" onclick="window.filterShops('all')">عرض الكل</span></h3>
+            <div class="shops-scroll" id="shops-list">
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('تكه كريب ابو وعد')"><div class="img-box"><img src="images/covers/cover_taka.jpg" onerror="this.src='https://placehold.co/70'"></div><span>تكه كريب</span></div>
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('مطعم الهندي')"><div class="img-box"><img src="images/covers/cover_hindi.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الهندي</span></div>
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('ابن البلد')"><div class="img-box"><img src="images/covers/cover_ibn_albalad.jpg" onerror="this.src='https://placehold.co/70'"></div><span>ابن البلد</span></div>
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('بيتزا الأصدقاء')"><div class="img-box"><img src="images/covers/cover_friends.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الأصدقاء</span></div>
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('كشري الارزاق بالله')"><div class="img-box"><img src="images/covers/cover_arzak.jpg" onerror="this.src='https://placehold.co/70'"></div><span>الارزاق بالله</span></div>
+                <div class="shop-circle" data-cat="restaurant" onclick="window.openShop('كبداكي وكبده رده')"><div class="img-box"><img src="images/covers/cover_kabdaky.jpg" onerror="this.src='https://placehold.co/70'"></div><span>كبداكي</span></div>
+                <div class="shop-circle" data-cat="sweets" onclick="window.openShop('وافيل وفليانو')"><div class="img-box"><img src="images/covers/cover_wafeliano.jpg" onerror="this.src='https://placehold.co/70'"></div><span>وفليانو</span></div>
+                <div class="shop-circle" data-cat="market" onclick="window.openShop('سوبر ماركت الاستاذ')"><div class="img-box"><img src="images/covers/cover_market.jpg" onerror="this.src='https://placehold.co/70'"></div><span>ماركت الأستاذ</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Menu -->
+    <div id="screen-shop" class="app-screen">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-home')" style="cursor: pointer;"></i>
+            <span id="shop-title">اسم المطعم</span>
+        </div>
+        <div id="menu-container"></div>
+    </div>
+
+    <!-- Addresses Screen -->
+    <div id="screen-addresses" class="app-screen">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-account')" style="cursor: pointer;"></i>
+            عناويني المحفوظة
+        </div>
+        <div id="addresses-list"></div>
+        <div class="add-address-btn" onclick="window.addNewAddress()">
+            <i class="fa-solid fa-plus"></i> إضافة عنوان جديد
+        </div>
+    </div>
+
+    <!-- Pharmacy Screen (تمت التعديلات هنا للصورة) -->
+    <div id="screen-pharmacy" class="app-screen">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-home')" style="cursor: pointer;"></i>
+            الصيدلية
+        </div>
+        <div style="background: white; margin: 20px; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--border);">
+            <p style="margin-bottom: 20px; font-weight: bold; color: var(--text-main);">ارفع صورة الروشتة أو اكتب الأدوية اللي محتاجها وهنوفرها لك فوراً.</p>
+            
+            <label class="btn btn-outline" style="display:flex; flex-direction:column; gap:10px; padding:20px; margin-bottom:15px; cursor:pointer;">
+                <i class="fa-solid fa-camera" style="font-size:30px;"></i>
+                <span>التقط صورة بالكاميرا</span>
+                <!-- capture="environment" تفتح الكاميرا فوراً -->
+                <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="window.uploadPharmacyMedia(this)">
+            </label>
+            
+            <label class="btn btn-outline" style="display:flex; flex-direction:column; gap:10px; padding:20px; margin-bottom:15px; cursor:pointer; border-color:#2196F3; color:#2196F3;">
+                <i class="fa-solid fa-image" style="font-size:30px;"></i>
+                <span>اختر صورة من المعرض</span>
+                <!-- يفتح المعرض لاختيار صورة -->
+                <input type="file" accept="image/*" style="display:none;" onchange="window.uploadPharmacyMedia(this)">
+            </label>
+
+            <!-- حالة رفع الصورة -->
+            <div id="pharmacy-upload-loader" class="loader" style="margin-bottom: 15px; display: none;"></div>
+            <p id="pharmacy-upload-status" style="color:var(--primary); font-weight:bold; font-size:13px; margin-bottom:10px; display:none;">✅ تم إرفاق الصورة وجاهزة للإرسال</p>
+
+            <textarea id="pharmacy-notes" rows="3" style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid var(--border); font-family: 'Tajawal'; margin-bottom: 15px;" placeholder="أو اكتب أسماء الأدوية والملاحظات هنا..."></textarea>
+            
+            <button class="btn btn-primary" onclick="window.sendPharmacyOrder()" style="background: #25D366;">
+                إرسال الطلب للواتساب <i class="fa-brands fa-whatsapp"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart -->
+    <div id="screen-cart" class="app-screen">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-home')" style="cursor: pointer;"></i>
+            سلة المشتريات
+        </div>
+        <div id="cart-container" style="padding-bottom: 80px;"></div>
+        <div class="cart-total-bar" id="checkout-bar" style="display: none;">
+            <div>الإجمالي: <span id="cart-total-price">0</span> ج.م</div>
+            <button onclick="window.confirmOrder()">تأكيد الطلب</button>
+        </div>
+    </div>
+
+    <!-- Account (تم إضافة زر تعديل البيانات) -->
+    <div id="screen-account" class="app-screen">
+        <div class="page-header">حسابي</div>
+        <div style="padding: 20px; text-align: center; background: var(--white);">
+            <div style="width: 80px; height: 80px; background: var(--primary); color:white; border-radius: 50%; display:flex; justify-content:center; align-items:center; font-size: 35px; margin: 0 auto 10px;">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h2 id="acc-name-display" style="font-size:18px; margin-bottom:5px;">جاري التحميل...</h2>
+            <h4 id="acc-phone-display" style="color:var(--text-muted); font-size:14px; margin-bottom:10px;">...</h4>
+            
+            <button class="btn btn-outline" style="padding: 8px 15px; font-size: 14px; width: auto; margin: 0 auto 20px;" onclick="window.editProfile()">
+                <i class="fa-solid fa-pen"></i> تعديل بياناتي
+            </button>
+        </div>
+        <div class="account-menu">
+            <div class="account-item" onclick="window.navTo('screen-addresses')">
+                <i class="fa-solid fa-location-dot" style="width: 25px; text-align: center;"></i> عناويني
+            </div>
+            <div class="account-item" onclick="window.open('https://wa.me/201123153850', '_blank')">
+                <i class="fa-solid fa-headset" style="width: 25px; text-align: center;"></i> تواصل مع الدعم
+            </div>
+            <div class="account-item" onclick="window.navTo('screen-developer')">
+                <i class="fa-solid fa-code" style="width: 25px; text-align: center;"></i> عن المطور (فيرس)
+            </div>
+            
+            <div class="account-item" id="btn-admin-dashboard" style="display:none; color:var(--white); background:var(--primary-dark); font-weight:900; border-radius:8px; margin:10px 0; justify-content:center;" onclick="window.navTo('screen-admin')">
+                <i class="fa-solid fa-lock" style="color:white;"></i> إدارة المنيو
+            </div>
+
+            <!-- زر تسجيل الخروج (تم تحسينه) -->
+            <div class="account-item" style="color: red;" onclick="window.logoutUser()">
+                <i class="fa-solid fa-arrow-right-from-bracket" style="width: 25px; text-align: center; color: red;"></i> تسجيل الخروج
+            </div>
+        </div>
+    </div>
+
+    <!-- Developer Screen -->
+    <div id="screen-developer" class="app-screen">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-account')" style="cursor: pointer;"></i>
+            لوحة المطور
+        </div>
+        <div style="padding: 30px 20px; text-align: center; background: var(--white); min-height: 80vh;">
+            <img src="images/system/dev_virus.png" onerror="this.src='https://placehold.co/120?text=Virus'" style="width:120px; height:120px; border-radius:50%; margin-bottom:15px; border: 4px solid var(--primary); object-fit:cover;">
+            <h2 style="color: var(--primary-dark); font-size:22px;">محمد أحمد عبد النبي</h2>
+            <h4 style="color: var(--text-muted); margin-bottom: 20px;">(فيرس)</h4>
+            <p style="font-size: 15px; font-weight:bold;">مطور برامج ومواقع وتطبيقات 💻<br>ومصمم وفيديو إديتور 🎨🎬</p>
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid var(--border);">
+                <div>للتواصل لطلب تصميم تطبيقات مماثلة:</div>
+                <div style="font-size: 22px; color: var(--primary); font-weight: 900;">01004997697</div>
+                <button class="btn btn-primary" style="margin-top: 15px; background: #25D366;" onclick="window.open('https://wa.me/201004997697')">
+                    <i class="fa-brands fa-whatsapp"></i> تواصل معي عبر واتساب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (إدارة المنيو) -->
+    <div id="screen-admin" class="app-screen" style="padding-bottom: 120px;">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-right" onclick="window.navTo('screen-account')" style="cursor: pointer;"></i>
+            إدارة المنيو
+        </div>
+        <div style="padding: 15px;">
+            
+            <!-- إضافة بانرات -->
+            <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+                <h4 style="margin-bottom: 10px; color: var(--primary-dark);">إدارة البانرات</h4>
+                <div style="display:flex; gap:10px;">
+                    <label class="btn-outline" style="flex:1; padding:10px; border-radius:8px; text-align:center; font-size:13px; cursor:pointer;">
+                        بانر 1 <input type="file" style="display:none;" onchange="window.uploadBanner(this, 1)">
+                    </label>
+                    <label class="btn-outline" style="flex:1; padding:10px; border-radius:8px; text-align:center; font-size:13px; cursor:pointer;">
+                        بانر 2 <input type="file" style="display:none;" onchange="window.uploadBanner(this, 2)">
+                    </label>
+                    <label class="btn-outline" style="flex:1; padding:10px; border-radius:8px; text-align:center; font-size:13px; cursor:pointer;">
+                        بانر 3 <input type="file" style="display:none;" onchange="window.uploadBanner(this, 3)">
+                    </label>
+                </div>
+            </div>
+
+            <!-- إضافة محل جديد -->
+            <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+                <h4 style="margin-bottom: 10px; color: var(--primary-dark);">إضافة محل جديد</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="new-shop-name" placeholder="اسم المحل" class="input-group" style="margin:0; flex:2; padding:10px; border-radius:8px;">
+                    <button class="btn btn-primary" style="margin:0; flex:1; padding:10px; border-radius:8px;" onclick="window.addNewShop()">إضافة</button>
+                </div>
+            </div>
+            
+            <p style="text-align:center; font-size:14px; margin-bottom:10px; font-weight:bold; color:var(--text-main);">اختر المحل لتعديل أقسامه ومنتجاته:</p>
+            
+            <select id="admin-shop-select" class="input-group" style="width:100%; padding:12px; font-weight:bold; font-family:'Tajawal';" onchange="window.loadAdminMenu()">
+                <option value="تكه كريب ابو وعد">تكه كريب ابو وعد</option>
+                <option value="بيتزا الأصدقاء">بيتزا الأصدقاء</option>
+                <option value="وافيل وفليانو">وافيل وفليانو</option>
+                <option value="كشري الارزاق بالله">كشري الارزاق بالله</option>
+                <option value="كبداكي وكبده رده">كبداكي وكبده رده</option>
+                <option value="ابن البلد">ابن البلد</option>
+                <option value="مطعم الهندي">مطعم الهندي</option>
+                <option value="سوبر ماركت الاستاذ">سوبر ماركت الاستاذ</option>
+            </select>
+            
+            <button class="btn btn-outline" onclick="window.showAddProductForm()" style="margin-bottom:20px; border-style:dashed;">
+                <i class="fa-solid fa-plus"></i> إضافة قسم / منتج
+            </button>
+            
+            <div id="admin-add-form" class="admin-edit-box" style="display:none; background:#f0fdf4;">
+                <h4 style="margin-bottom:10px; color:var(--primary-dark);">إضافة منتج</h4>
+                <input type="text" id="add-cat" placeholder="اسم القسم (إذا كان جديد سُيضاف تلقائياً)" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                <input type="text" id="add-name" placeholder="اسم المنتج" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                <input type="number" id="add-price" placeholder="السعر (أرقام فقط)" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                
+                <label class="btn" style="font-size:14px; padding:10px; margin-bottom:10px; display:block; text-align:center; cursor:pointer; background:#FF9800; color:white; border-radius:8px;">
+                    <i class="fa-solid fa-image"></i> اختر صورة من الموبايل
+                    <input type="file" id="add-img-file" accept="image/*" style="display:none;">
+                </label>
+                
+                <button class="btn btn-primary" onclick="window.saveNewProduct()">حفظ المنتج ورفعه للسيرفر</button>
+                <div id="upload-loader" class="loader" style="margin-top:10px;"></div>
+            </div>
+
+            <div id="admin-menu-list"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="main-nav">
+        <div class="nav-item active" id="nav-home" onclick="window.navTo('screen-home', this)">
+            <img src="images/icons/nav_home.png" onerror="this.src='https://placehold.co/24'">
+            <span>الرئيسية</span>
+        </div>
+        <div class="nav-item" id="nav-cart" onclick="window.navTo('screen-cart', this)">
+            <img src="images/icons/nav_cart.png" onerror="this.src='https://placehold.co/24'">
+            <span>السلة</span>
+        </div>
+        <div class="nav-item" id="nav-account" onclick="window.navTo('screen-account', this)">
+            <img src="images/icons/nav_user.png" onerror="this.src='https://placehold.co/24'">
+            <span>حسابي</span>
+        </div>
+    </div>
+
+    <!-- 🌟 قاعدة البيانات المحلية المفرودة 🌟 -->
+    <script>
+        window.shopMenus = {
+            "تكه كريب ابو وعد": [
+                { 
+                    category: "مشويات وكريب", 
+                    items: [
+                        { name: "ربع فراخ", price: 90, img: "sm_taka_q_chicken.jpg" },
+                        { name: "ربع كفته", price: 85, img: "sm_taka_q_kofta.jpg" },
+                        { name: "كريب", price: 85, img: "sm_taka_crepe.jpg" },
+                        { name: "كريب كبده", price: 80, img: "sm_taka_crepe_k.jpg" }
+                    ]
+                },
+                { 
+                    category: "ساندوتشات سوري", 
+                    items: [
+                        { name: "سوري بانيه", price: 50, img: "sm_taka_s_pane.jpg" },
+                        { name: "سوري بطاطس", price: 35, img: "sm_taka_s_batatas.jpg" },
+                        { name: "سوري كبده", price: 50, img: "sm_taka_s_kebda.jpg" }
+                    ]
+                },
+                { 
+                    category: "أخرى", 
+                    items: [
+                        { name: "كبده فينو", price: 17.5, img: "sm_taka_k_fino.jpg" },
+                        { name: "كبده عيش", price: 12.5, img: "sm_taka_k_eish.jpg" },
+                        { name: "حواوشي", price: 12.5, img: "sm_taka_hawawshi.jpg" },
+                        { name: "بانيه", price: 30, img: "sm_taka_pane.jpg" }
+                    ]
+                }
+            ],
+            "بيتزا الأصدقاء": [
+                { 
+                    category: "البيتزا", 
+                    items: [
+                        { name: "بيتزا رانش الاصدقاء", prices: [80, 100, 130, 160, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_ranch.jpg" },
+                        { name: "بيتزا باللحمة المفروم", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_meat.jpg" },
+                        { name: "بيتزا سجق", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_sogoq.jpg" },
+                        { name: "بيتزا بالفراخ", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_chicken.jpg" },
+                        { name: "بيتزا بالسوسيس", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_hotdog.jpg" },
+                        { name: "بيتزا بالتونة", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_tuna.jpg" },
+                        { name: "بيتزا مارجريتا", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_marg.jpg" },
+                        { name: "بيتزا مشكل الأصدقاء", prices: [70, 90, 120, 150, 200], sizes: ["ميني", "صغير", "وسط", "كبير", "عائلي"], img: "sm_pizza_mix.jpg" }
+                    ]
+                },
+                { 
+                    category: "الصواريخ", 
+                    items: [
+                        { name: "صاروخ لحمة مفروم", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_meat.jpg" },
+                        { name: "صاروخ سجق", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_sogoq.jpg" },
+                        { name: "صاروخ فراخ", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_chicken.jpg" },
+                        { name: "صاروخ سوسيس", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_hotdog.jpg" },
+                        { name: "صاروخ تونة", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_tuna.jpg" },
+                        { name: "صاروخ مارجريتا", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_marg.jpg" },
+                        { name: "صاروخ مشكل جبن", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_sarokh_cheese.jpg" }
+                    ]
+                },
+                { 
+                    category: "الفطائر", 
+                    items: [
+                        { name: "فطيره فراخ", prices: [70, 90, 130, 150], sizes: ["صغير", "وسط", "كبير", "عائلي"], img: "sm_fatera_c.jpg" },
+                        { name: "فطيره لحمه مفرومة", prices: [70, 90, 130, 150], sizes: ["صغير", "وسط", "كبير", "عائلي"], img: "sm_fatera_m.jpg" },
+                        { name: "فطيره سوسيس", prices: [70, 90, 130, 150], sizes: ["صغير", "وسط", "كبير", "عائلي"], img: "sm_fatera_h.jpg" },
+                        { name: "فطيره كيري سجق", prices: [80, 100, 140, 160], sizes: ["صغير", "وسط", "كبير", "عائلي"], img: "sm_fatera_kiri.jpg" },
+                        { name: "فطيره جبن", prices: [70, 90, 130, 150], sizes: ["صغير", "وسط", "كبير", "عائلي"], img: "sm_fatera_ch.jpg" }
+                    ]
+                },
+                { 
+                    category: "الحواوشي", 
+                    items: [
+                        { name: "حواوشي اسكندراني", prices: [12.5, 50, 60, 80, 100], sizes: ["رغيف", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_hawawshi_alex.jpg" },
+                        { name: "حواوشي سوري", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_hawawshi_souri.jpg" },
+                        { name: "فطيره بلسجق", prices: [12.5, 60, 70, 80, 100], sizes: ["رغيف", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_fatera_sogoq.jpg" },
+                        { name: "حواوشي مشكل لحوم", prices: [60, 70, 80, 100], sizes: ["حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_hawawshi_mix_m.jpg" },
+                        { name: "حواوشي مشكل جبن", prices: [50, 60, 70, 80, 100], sizes: ["حجم 1", "حجم 2", "حجم 3", "حجم 4", "حجم 5"], img: "sm_hawawshi_mix_c.jpg" }
+                    ]
+                },
+                { 
+                    category: "الإضافات", 
+                    items: [
+                        { name: "إضافة جبنة رومي", price: 10, img: "sm_add_romi.jpg" },
+                        { name: "إضافة موزريلا", price: 10, img: "sm_add_moz.jpg" },
+                        { name: "إضافة لحوم", prices: [20, 30, 40], sizes: ["قليل", "متوسط", "كثير"], img: "sm_add_meat.jpg" }
+                    ]
+                }
+            ],
+            "وافيل وفليانو": [
+                { 
+                    category: "وافل", 
+                    items: [
+                        { name: "وافل مدور نص موز وشوكليت ووايت", price: 50, img: "sm_waf_1.jpg" },
+                        { name: "وافل مدور شوكليت موز كامل", price: 60, img: "sm_waf_2.jpg" },
+                        { name: "وافل مرسوم وايت وكراميل وشوكولاته", price: 50, img: "sm_waf_3.jpg" },
+                        { name: "وافل شوكولاته نص تفاح وموز وفراولة", price: 55, img: "sm_waf_4.jpg" },
+                        { name: "وافل مدور نص هوهوز ونص وايت", price: 50, img: "sm_waf_5.jpg" },
+                        { name: "وافل مدور تفاح ومانجا وموز وكيوي", price: 90, img: "sm_waf_6.jpg" },
+                        { name: "وافل ربع وربع مدور", price: 40, img: "sm_waf_7.jpg" },
+                        { name: "وافل مدور كامل موز وهوهوز", price: 60, img: "sm_waf_8.jpg" },
+                        { name: "وافل مدور نص هوهوز ونص موز", price: 60, img: "sm_waf_9.jpg" },
+                        { name: "وافل مدور مرسوم شوكليت ووايت", price: 60, img: "sm_waf_10.jpg" },
+                        { name: "وافل مدور نص موز ونص مانجا وفراولة", price: 70, img: "sm_waf_11.jpg" },
+                        { name: "وافل مدور هوهوز، موز، شوكليت، لوتس", price: 60, img: "sm_waf_12.jpg" }
+                    ]
+                },
+                { 
+                    category: "بان كيك", 
+                    items: [
+                        { name: "طبق بان كيك صغير", price: 30, img: "sm_pan_1.jpg" },
+                        { name: "طبق بان كيك كبير وتورتة وافل (دورين)", price: 100, img: "sm_pan_2.jpg" },
+                        { name: "طبق بان كيك 25 قطعة", price: 60, img: "sm_pan_3.jpg" },
+                        { name: "طبق بان كيك كبير", price: 60, img: "sm_pan_4.jpg" },
+                        { name: "نص وافلاية و 10 قطع بان كيك", price: 50, img: "sm_pan_5.jpg" }
+                    ]
+                },
+                { 
+                    category: "طواجن واستيك", 
+                    items: [
+                        { name: "طاجن وافل بالبستاشيو", price: 80, img: "sm_taj_1.jpg" },
+                        { name: "طاجن وافل", price: 70, img: "sm_taj_2.jpg" },
+                        { name: "طاجن صغير", price: 50, img: "sm_taj_3.jpg" },
+                        { name: "طاجن وافل كبير", price: 120, img: "sm_taj_4.jpg" },
+                        { name: "استيك الأربعة", price: 50, img: "sm_stk_1.jpg" },
+                        { name: "استيك شوكولاتة", price: 15, img: "sm_stk_2.jpg" }
+                    ]
+                }
+            ],
+            "كشري الارزاق بالله": [
+                { 
+                    category: "كشري", 
+                    items: [
+                        { name: "طبق الأرزاق بالله", price: 30, img: "sm_kosh_1.jpg" },
+                        { name: "طبق الأرزاق", price: 25, img: "sm_kosh_2.jpg" },
+                        { name: "طبق دبل", price: 20, img: "sm_kosh_3.jpg" },
+                        { name: "طبق سوبر", price: 15, img: "sm_kosh_4.jpg" },
+                        { name: "طبق لوكس", price: 15, img: "sm_kosh_5.jpg" },
+                        { name: "طبق كمالة", price: 15, img: "sm_kosh_6.jpg" },
+                        { name: "كيس كشري", price: 10, img: "sm_kosh_7.jpg" }
+                    ]
+                },
+                { 
+                    category: "طواجن", 
+                    items: [
+                        { name: "طاجن فراخ", price: 35, img: "sm_taj_ch.jpg" },
+                        { name: "طاجن كبدة", price: 30, img: "sm_taj_k.jpg" },
+                        { name: "طاجن موزاريلا", price: 50, img: "sm_taj_m.jpg" }
+                    ]
+                },
+                { 
+                    category: "أخرى", 
+                    items: [
+                        { name: "أرز باللبن فرن", price: 15, img: "sm_rice_o.jpg" },
+                        { name: "أرز باللبن عادة", price: 15, img: "sm_rice_n.jpg" },
+                        { name: "طبق أم علي", price: 15, img: "sm_om_ali.jpg" },
+                        { name: "بسبوسة", price: 15, img: "sm_basb.jpg" },
+                        { name: "حاجة ساقعة", price: 15, img: "sm_soda.jpg" },
+                        { name: "عيش توست", price: 10, img: "sm_toast.jpg" }
+                    ]
+                }
+            ],
+            "كبداكي وكبده رده": [
+                { 
+                    category: "قسم كبداكي", 
+                    items: [
+                        { name: "سندوتش كبده عيش بلدي", price: 12.5, img: "sm_kab_1.jpg" },
+                        { name: "سندوتش كفته", price: 12.5, img: "sm_kab_2.jpg" },
+                        { name: "سندوتش كفته ع كبده", price: 12.5, img: "sm_kab_3.jpg" },
+                        { name: "سندوتش حواوشي", price: 10, img: "sm_kab_4.jpg" },
+                        { name: "طلب كبده ع كفته", price: 60, img: "sm_kab_5.jpg" },
+                        { name: "طلب كفته", price: 60, img: "sm_kab_6.jpg" },
+                        { name: "طلب كبده", price: 60, img: "sm_kab_7.jpg" }
+                    ]
+                },
+                { 
+                    category: "قسم الكبده الرده", 
+                    items: [
+                        { name: "سندوتش كبده رده", price: 15, img: "sm_rad_1.jpg" },
+                        { name: "تمن كبده رده", price: 60, img: "sm_rad_2.jpg" },
+                        { name: "ربع كبده رده", price: 110, img: "sm_rad_3.jpg" },
+                        { name: "نص كبده رده", price: 220, img: "sm_rad_4.jpg" },
+                        { name: "كيلو كبده رده", price: 440, img: "sm_rad_5.jpg" }
+                    ]
+                }
+            ],
+            "ابن البلد": [
+                { 
+                    category: "برجر وسندوتشات", 
+                    items: [
+                        { name: "نيزك برجر سنجل", price: 100, img: "sm_ebn_1.jpg" },
+                        { name: "بركان برجر سنجل", price: 80, img: "sm_ebn_2.jpg" },
+                        { name: "برجر زوكش سنجل", price: 110, img: "sm_ebn_3.jpg" },
+                        { name: "برجر كلاسيك سنجل", price: 60, img: "sm_ebn_4.jpg" },
+                        { name: "هاولي برجر", price: 75, img: "sm_ebn_5.jpg" },
+                        { name: "برجر ماشروم", price: 55, img: "sm_ebn_6.jpg" },
+                        { name: "تشكين ايزي", price: 70, img: "sm_ebn_7.jpg" },
+                        { name: "تشيكن فاير", price: 100, img: "sm_ebn_8.jpg" },
+                        { name: "بانيه فرنساوي", price: 35, img: "sm_ebn_9.jpg" },
+                        { name: "بانيه بلدي", price: 25, img: "sm_ebn_10.jpg" },
+                        { name: "كفته رينج", price: 35, img: "sm_ebn_11.jpg" },
+                        { name: "كفته فرنساوي", price: 30, img: "sm_ebn_12.jpg" },
+                        { name: "كبده فينو", price: 20, img: "sm_ebn_13.jpg" },
+                        { name: "كبده بلدي", price: 15, img: "sm_ebn_14.jpg" },
+                        { name: "سجق فرنساوي", price: 20, img: "sm_ebn_15.jpg" },
+                        { name: "كبد وقوانص", price: 20, img: "sm_ebn_16.jpg" }
+                    ]
+                },
+                { 
+                    category: "السوري", 
+                    items: [
+                        { name: "سوري بطاطس", price: 20, img: "sm_ebn_17.jpg" },
+                        { name: "سوري شاورما", price: 50, img: "sm_ebn_18.jpg" },
+                        { name: "سوري بانيه بطاطس", price: 50, img: "sm_ebn_19.jpg" },
+                        { name: "سوري بانيه", price: 45, img: "sm_ebn_20.jpg" },
+                        { name: "سوري فاهيتا", price: 50, img: "sm_ebn_21.jpg" }
+                    ]
+                },
+                { 
+                    category: "مكرونات بشاميل", 
+                    items: [
+                        { name: "مكرونه كبد وقوانص", price: 55, img: "sm_ebn_22.jpg" },
+                        { name: "مكرونه كبده", price: 50, img: "sm_ebn_23.jpg" },
+                        { name: "مكرونه شاورما", price: 60, img: "sm_ebn_24.jpg" },
+                        { name: "مكرونه بانيه", price: 60, img: "sm_ebn_25.jpg" },
+                        { name: "مكرونه مكس", price: 70, img: "sm_ebn_26.jpg" },
+                        { name: "مكرونه لحمه", price: 60, img: "sm_ebn_27.jpg" },
+                        { name: "مكرونه سجق", price: 50, img: "sm_ebn_28.jpg" }
+                    ]
+                },
+                { 
+                    category: "مشويات", 
+                    items: [
+                        { name: "فراخ تكه", price: 85, img: "sm_ebn_29.jpg" },
+                        { name: "فراخ شيش", price: 85, img: "sm_ebn_30.jpg" },
+                        { name: "كفته", price: 85, img: "sm_ebn_31.jpg" },
+                        { name: "سيخ كفته", price: 25, img: "sm_ebn_32.jpg" }
+                    ]
+                },
+                { 
+                    category: "كريب", 
+                    items: [
+                        { name: "كريب شيش", price: 100, img: "sm_ebn_33.jpg" },
+                        { name: "كريب فاهيتا", price: 90, img: "sm_ebn_34.jpg" },
+                        { name: "كريب برجر", price: 50, img: "sm_ebn_35.jpg" },
+                        { name: "كريب كفته", price: 85, img: "sm_ebn_36.jpg" },
+                        { name: "كريب ميكس ابن البلد", price: 110, img: "sm_ebn_37.jpg" },
+                        { name: "كريب بطاطس", price: 45, img: "sm_ebn_38.jpg" },
+                        { name: "كريب بانيه فريش", price: 80, img: "sm_ebn_39.jpg" },
+                        { name: "كريب شاورما", price: 80, img: "sm_ebn_40.jpg" },
+                        { name: "كريب كبده", price: 60, img: "sm_ebn_41.jpg" },
+                        { name: "كريب بانيه + قطع", price: 100, img: "sm_ebn_42.jpg" },
+                        { name: "كريب جومانجي", price: 100, img: "sm_ebn_43.jpg" },
+                        { name: "كريب كرسبي كروكودايل", price: 100, img: "sm_ebn_44.jpg" },
+                        { name: "كريب مكس جبن", price: 85, img: "sm_ebn_45.jpg" },
+                        { name: "كريب سوسيس", price: 50, img: "sm_ebn_46.jpg" }
+                    ]
+                },
+                { 
+                    category: "حواوشي وكساديا", 
+                    items: [
+                        { name: "حواوشي ساده", price: 15, img: "sm_ebn_47.jpg" },
+                        { name: "حواوشي مكس جبنه", price: 50, img: "sm_ebn_48.jpg" },
+                        { name: "حواوشي فراخ", price: 35, img: "sm_ebn_49.jpg" },
+                        { name: "حواوشي كبد وقوانص", price: 30, img: "sm_ebn_50.jpg" },
+                        { name: "حواوشي جبنه", price: 20, img: "sm_ebn_51.jpg" },
+                        { name: "حواوشي دبل", price: 30, img: "sm_ebn_52.jpg" },
+                        { name: "حواوشي مخصوص", price: 60, img: "sm_ebn_53.jpg" },
+                        { name: "كساديا فراخ", prices: [110, 130], sizes: ["عادي", "لارج"], img: "sm_ebn_54.jpg" }
+                    ]
+                }
+            ],
+            "مطعم الهندي": [
+                { 
+                    category: "مشويات", 
+                    items: [
+                        { name: "فراخ تكه", price: 85, img: "sm_hin_1.jpg" },
+                        { name: "فراخ شيش", price: 85, img: "sm_hin_2.jpg" },
+                        { name: "كفته", price: 80, img: "sm_hin_3.jpg" },
+                        { name: "كفته ضاني", price: 90, img: "sm_hin_4.jpg" },
+                        { name: "سيخ كفته", price: 25, img: "sm_hin_5.jpg" }
+                    ]
+                },
+                { 
+                    category: "كريب", 
+                    items: [
+                        { name: "كريب شيش", price: 110, img: "sm_hin_6.jpg" },
+                        { name: "كريب بانيه + بطاطس", price: 90, img: "sm_hin_7.jpg" },
+                        { name: "كريب فاهيتا", price: 100, img: "sm_hin_8.jpg" },
+                        { name: "كريب برجر", price: 60, img: "sm_hin_9.jpg" },
+                        { name: "كريب كفته", price: 85, img: "sm_hin_10.jpg" },
+                        { name: "كريب سجق", price: 70, img: "sm_hin_11.jpg" },
+                        { name: "كريب ميكس الهندي", price: 120, img: "sm_hin_12.jpg" },
+                        { name: "كريب بطاطس", price: 50, img: "sm_hin_13.jpg" },
+                        { name: "كريب بانيه فريش", price: 80, img: "sm_hin_14.jpg" },
+                        { name: "كريب شاورما", price: 80, img: "sm_hin_15.jpg" },
+                        { name: "كريب ميكس سوسيس برجر", price: 60, img: "sm_hin_16.jpg" },
+                        { name: "كريب كبده", price: 60, img: "sm_hin_17.jpg" },
+                        { name: "كريب ميكس لحوم", price: 100, img: "sm_hin_18.jpg" },
+                        { name: "كريب بانيه + قطع", price: 100, img: "sm_hin_19.jpg" }
+                    ]
+                },
+                { 
+                    category: "سندوتشات", 
+                    items: [
+                        { name: "بطاطس بلدي", price: 10, img: "sm_hin_20.jpg" },
+                        { name: "برجر محشو", price: 45, img: "sm_hin_21.jpg" },
+                        { name: "شاورما فينو", price: 35, img: "sm_hin_22.jpg" },
+                        { name: "شاورما بلدي", price: 30, img: "sm_hin_23.jpg" },
+                        { name: "فرايد تشكن سنجل", price: 50, img: "sm_hin_24.jpg" },
+                        { name: "سجق فينو", price: 20, img: "sm_hin_25.jpg" },
+                        { name: "سجق بلدي", price: 15, img: "sm_hin_26.jpg" },
+                        { name: "كفتة فينو", price: 30, img: "sm_hin_27.jpg" },
+                        { name: "شيش دبل", price: 80, img: "sm_hin_28.jpg" },
+                        { name: "شيش فينو", price: 50, img: "sm_hin_29.jpg" },
+                        { name: "برجر اسماش دبل", price: 80, img: "sm_hin_30.jpg" },
+                        { name: "كبد وقوانص", price: 17, img: "sm_hin_31.jpg" },
+                        { name: "برجر", price: 30, img: "sm_hin_32.jpg" },
+                        { name: "بانيه فريش فينو", price: 35, img: "sm_hin_33.jpg" },
+                        { name: "فاهيتا فينو", price: 40, img: "sm_hin_34.jpg" },
+                        { name: "بانيه بلدي", price: 30, img: "sm_hin_35.jpg" },
+                        { name: "فرايد تشكن دبل", price: 70, img: "sm_hin_36.jpg" },
+                        { name: "كبده فينو", price: 20, img: "sm_hin_37.jpg" },
+                        { name: "كبده بلدي", price: 15, img: "sm_hin_38.jpg" },
+                        { name: "بطاطس فينو", price: 15, img: "sm_hin_39.jpg" },
+                        { name: "اسماش برجر سنجل", price: 50, img: "sm_hin_40.jpg" },
+                        { name: "برجر دبل", price: 45, img: "sm_hin_41.jpg" },
+                        { name: "كفته بلدي", price: 25, img: "sm_hin_42.jpg" },
+                        { name: "سوري بانيه", price: 40, img: "sm_hin_43.jpg" },
+                        { name: "سوري بطاطس", price: 25, img: "sm_hin_44.jpg" }
+                    ]
+                },
+                { 
+                    category: "حواوشي وكساديا", 
+                    items: [
+                        { name: "حواوشي ساده", price: 15, img: "sm_hin_45.jpg" },
+                        { name: "حواوشي سجق", price: 25, img: "sm_hin_46.jpg" },
+                        { name: "حواوشي دبل جبنه", price: 45, img: "sm_hin_47.jpg" },
+                        { name: "حواوشي فراخ", price: 50, img: "sm_hin_48.jpg" },
+                        { name: "حواوشي كبد وقوانص", price: 30, img: "sm_hin_49.jpg" },
+                        { name: "حواوشي جبنه", price: 25, img: "sm_hin_50.jpg" },
+                        { name: "حواوشي دبل", price: 25, img: "sm_hin_51.jpg" },
+                        { name: "كساديا فراخ", prices: [120, 150], sizes: ["عادي", "لارج"], img: "sm_hin_52.jpg" }
+                    ]
+                }
+            ],
+            "سوبر ماركت الاستاذ": [
+                { 
+                    category: "الأعشاب والمشروبات الساخنة", 
+                    items: [
+                        { name: "ينسون إيزيس 20 فتلة", price: 25, img: "sm_hot_1.jpg" },
+                        { name: "كركديه إيزيس 20 فتلة", price: 25, img: "sm_hot_2.jpg" },
+                        { name: "ورق جوافة إيزيس 20 فتلة", price: 30, img: "sm_hot_3.jpg" },
+                        { name: "نعناع إيزيس 20 فتلة", price: 30, img: "sm_hot_4.jpg" },
+                        { name: "بقدونس وكرفس إيزيس 20 فتلة", price: 30, img: "sm_hot_5.jpg" },
+                        { name: "جنزبيل وقرفة إيزيس 20 فتلة", price: 30, img: "sm_hot_6.jpg" },
+                        { name: "بن أبو عوف فاتح ساده 50 جرام", price: 45, img: "sm_hot_7.jpg" },
+                        { name: "بن أبو عوف وسط محوج 50 جرام", price: 55, img: "sm_hot_8.jpg" },
+                        { name: "بن أبو عوف فاتح محوج 50 جرام", price: 55, img: "sm_hot_9.jpg" },
+                        { name: "بن أبو عوف فاتح ساده 100 جرام", price: 100, img: "sm_hot_10.jpg" },
+                        { name: "بن أبو عوف وسط ساده 100 جرام", price: 100, img: "sm_hot_11.jpg" },
+                        { name: "شاي العروسه ربع كيلو", price: 55, img: "sm_hot_12.jpg" },
+                        { name: "شاي ليبتون ربع كيلو", price: 55, img: "sm_hot_13.jpg" },
+                        { name: "شاي أخضر ليبتون 25 فتلة", price: 35, img: "sm_hot_14.jpg" },
+                        { name: "شاي الكبوس ربع كيلو", price: 65, img: "sm_hot_15.jpg" },
+                        { name: "شاي العروسه 40 جرام", price: 10, img: "sm_hot_16.jpg" },
+                        { name: "شاي ليبتون 40 جرام", price: 12, img: "sm_hot_17.jpg" },
+                        { name: "كاكاو كرونه", price: 25, img: "sm_hot_18.jpg" },
+                        { name: "كاكاو دريم", price: 90, img: "sm_hot_19.jpg" },
+                        { name: "كاستر سامح", price: 25, img: "sm_hot_20.jpg" },
+                        { name: "عصير تانج برتقال نصف كيلو", price: 75, img: "sm_hot_21.jpg" }
+                    ]
+                },
+                { 
+                    category: "الشوكولاتة والحلويات", 
+                    items: [
+                        { name: "شوكولاتة خام ساده", price: 65, img: "sm_choc_1.jpg" },
+                        { name: "شوكولاتة خام أبيض", price: 65, img: "sm_choc_2.jpg" },
+                        { name: "شوكولاتة خام كواليتي أبيض", price: 35, img: "sm_choc_3.jpg" },
+                        { name: "شوكولاتة خام كواليتي بني", price: 35, img: "sm_choc_4.jpg" },
+                        { name: "نوتيلا أحلى تلاه 1 كيلو", price: 120, img: "sm_choc_5.jpg" },
+                        { name: "نوتيلا أحلى تلاه صغيره", price: 45, img: "sm_choc_6.jpg" },
+                        { name: "حلاوة السلام ساده 1 كيلو", price: 85, img: "sm_choc_7.jpg" },
+                        { name: "حلاوة السلام شوكولاتة 1 كيلو", price: 90, img: "sm_choc_8.jpg" },
+                        { name: "حلاوة السلام 250 جرام", price: 40, img: "sm_choc_9.jpg" },
+                        { name: "حلاوة السلام ثمن كيلو", price: 20, img: "sm_choc_10.jpg" },
+                        { name: "حلاوة الأندلس نصف كيلو", price: 60, img: "sm_choc_11.jpg" },
+                        { name: "مربى ديناره تين وفراولة", price: 25, img: "sm_choc_12.jpg" }
+                    ]
+                },
+                { 
+                    category: "المكرونة والبقالة", 
+                    items: [
+                        { name: "مكرونة روعة شعريه", price: 10, img: "sm_pas_1.jpg" },
+                        { name: "مكرونة روعة مرماريه", price: 10, img: "sm_pas_2.jpg" },
+                        { name: "مكرونة روعة قلم", price: 10, img: "sm_pas_3.jpg" },
+                        { name: "مكرونة روعة اسباجتي", price: 10, img: "sm_pas_4.jpg" },
+                        { name: "مكرونة الملكة رفيعه", price: 15, img: "sm_pas_5.jpg" },
+                        { name: "مكرونة الملكة شعريه", price: 15, img: "sm_pas_6.jpg" },
+                        { name: "مكرونة الملكة قلم", price: 15, img: "sm_pas_7.jpg" },
+                        { name: "مكرونة الملكة وسط", price: 15, img: "sm_pas_8.jpg" },
+                        { name: "مكرونة الملكة لسان عصفور", price: 15, img: "sm_pas_9.jpg" },
+                        { name: "مكرونة سايب الكيلو", price: 24, img: "sm_pas_10.jpg" },
+                        { name: "دقيق سايب الكيلو", price: 20, img: "sm_pas_11.jpg" },
+                        { name: "عدس أصفر الربع", price: 15, img: "sm_pas_12.jpg" },
+                        { name: "عدس بجبه الربع", price: 15, img: "sm_pas_13.jpg" },
+                        { name: "حمص الربع", price: 15, img: "sm_pas_14.jpg" },
+                        { name: "ذرة فشار الربع", price: 15, img: "sm_pas_15.jpg" },
+                        { name: "فول هارفست", price: 20, img: "sm_pas_16.jpg" }
+                    ]
+                },
+                { 
+                    category: "الألبان والجبن", 
+                    items: [
+                        { name: "زبادي جهينه ساده 75 جرام", price: 5, img: "sm_dai_1.jpg" },
+                        { name: "زبادي جهينه فراولة 75 جرام", price: 5, img: "sm_dai_2.jpg" },
+                        { name: "زبادي المراعي ساده 75 جرام", price: 5, img: "sm_dai_3.jpg" },
+                        { name: "زبادي المراعي فراولة 75 جرام", price: 5, img: "sm_dai_4.jpg" },
+                        { name: "زبادي دانون ساده 75 جرام", price: 5, img: "sm_dai_5.jpg" },
+                        { name: "زبادي دانون فراولة 75 جرام", price: 5, img: "sm_dai_6.jpg" },
+                        { name: "زبادي مزارع دينا فراولة 75 جرام", price: 5, img: "sm_dai_7.jpg" },
+                        { name: "زبادي مزارع دينا ساده 75 جرام", price: 5, img: "sm_dai_8.jpg" },
+                        { name: "زبادي يوناني جهينه", price: 45, img: "sm_dai_9.jpg" },
+                        { name: "زبادي المراعي 160 جرام", price: 15, img: "sm_dai_10.jpg" },
+                        { name: "زبادي دانون كبير", price: 45, img: "sm_dai_11.jpg" },
+                        { name: "زبادو جهينه فراولة 220 مل", price: 18, img: "sm_dai_12.jpg" },
+                        { name: "حليب سايب", price: 25, img: "sm_dai_13.jpg" },
+                        { name: "حليب جاموسي سايب", price: 35, img: "sm_dai_14.jpg" },
+                        { name: "جبنة رومي قديم (ثمن)", price: 40, img: "sm_dai_15.jpg" },
+                        { name: "جبنة تلاجة (ثمن)", price: 15, img: "sm_dai_16.jpg" },
+                        { name: "مش تركي (ثمن)", price: 12.5, img: "sm_dai_17.jpg" },
+                        { name: "جبنة قديمة (ثمن)", price: 22, img: "sm_dai_18.jpg" },
+                        { name: "جبنة برميلي أبيض أو أصفر (ثمن)", price: 17.5, img: "sm_dai_19.jpg" },
+                        { name: "جبنة رودس بيضاء", price: 24, img: "sm_dai_20.jpg" },
+                        { name: "جبنة رودس رومي", price: 25, img: "sm_dai_21.jpg" },
+                        { name: "جبنة رودس شيدر", price: 25, img: "sm_dai_22.jpg" },
+                        { name: "جبنة رودس فلمنك", price: 25, img: "sm_dai_23.jpg" },
+                        { name: "جبنة عبور لاند بيضاء", price: 23, img: "sm_dai_24.jpg" },
+                        { name: "جبنة عبور لاند رومي", price: 23, img: "sm_dai_25.jpg" },
+                        { name: "جبنة عبور لاند شيدر", price: 23, img: "sm_dai_26.jpg" },
+                        { name: "جبنة المراعي بيضاء", price: 20, img: "sm_dai_27.jpg" },
+                        { name: "جبنة المراعي رومي", price: 20, img: "sm_dai_28.jpg" },
+                        { name: "جبنة المراعي شيدر", price: 20, img: "sm_dai_29.jpg" },
+                        { name: "جبنة دومتي", price: 20, img: "sm_dai_30.jpg" },
+                        { name: "جبنة دهب", price: 15, img: "sm_dai_31.jpg" },
+                        { name: "رودس الجولدن ربع كيلو طبيعي", price: 40, img: "sm_dai_32.jpg" },
+                        { name: "جبنة مثلثات لافاش كيري", price: 39, img: "sm_dai_33.jpg" },
+                        { name: "جبنة مثلثات طعمه", price: 40, img: "sm_dai_34.jpg" },
+                        { name: "جبنة مثلثات برزيدون", price: 70, img: "sm_dai_35.jpg" },
+                        { name: "جبنة مثلثات أبو الولد", price: 29, img: "sm_dai_36.jpg" },
+                        { name: "جبنة مثلثات الحلوبه", price: 17, img: "sm_dai_37.jpg" }
+                    ]
+                },
+                { 
+                    category: "اللحوم والمجمدات", 
+                    items: [
+                        { name: "ربع كيلو لانشون أورجينال", price: 35, img: "sm_meat_1.jpg" },
+                        { name: "ربع كيلو لانشون فراخ", price: 35, img: "sm_meat_2.jpg" },
+                        { name: "بانيه مزايا", price: 85, img: "sm_meat_3.jpg" },
+                        { name: "وجبة 12 قطعة كوكي", price: 220, img: "sm_meat_4.jpg" },
+                        { name: "استربس فودينا", price: 200, img: "sm_meat_5.jpg" },
+                        { name: "كفتة ص جولدن شيف", price: 30, img: "sm_meat_6.jpg" },
+                        { name: "كفتة ك جولدن شيف", price: 65, img: "sm_meat_7.jpg" },
+                        { name: "برجر ص", price: 30, img: "sm_meat_8.jpg" },
+                        { name: "برجر ك", price: 65, img: "sm_meat_9.jpg" },
+                        { name: "تونة دولفين مفتتة حار أو بارد", price: 35, img: "sm_meat_10.jpg" },
+                        { name: "تونة دولفين قطع حار", price: 65, img: "sm_meat_11.jpg" },
+                        { name: "تونة دولفين قطع بارد", price: 55, img: "sm_meat_12.jpg" },
+                        { name: "البيضة البيضاء", price: 4, img: "sm_meat_13.jpg" },
+                        { name: "البيضة الحمراء", price: 4, img: "sm_meat_14.jpg" }
+                    ]
+                },
+                { 
+                    category: "الزيوت والخل والطحينة", 
+                    items: [
+                        { name: "زيت صني 5 لتر", price: 380, img: "sm_oil_1.jpg" },
+                        { name: "زيت صني 3 لتر", price: 220, img: "sm_oil_2.jpg" },
+                        { name: "زيت العيله 3 لتر", price: 175, img: "sm_oil_3.jpg" },
+                        { name: "زيت عافيه ذرة صافي 3 لتر", price: 370, img: "sm_oil_4.jpg" },
+                        { name: "زيت عافيه لتر", price: 100, img: "sm_oil_5.jpg" },
+                        { name: "زيت العيله 700 مل", price: 65, img: "sm_oil_6.jpg" },
+                        { name: "زيت صولو 900 مل", price: 65, img: "sm_oil_7.jpg" },
+                        { name: "زيت دريم فودز 700 مل", price: 65, img: "sm_oil_8.jpg" },
+                        { name: "زيت خليط شطارة لتر", price: 75, img: "sm_oil_9.jpg" },
+                        { name: "زيت سندباد للقلي لتر", price: 80, img: "sm_oil_10.jpg" },
+                        { name: "زيت الممتاز لتر", price: 85, img: "sm_oil_11.jpg" },
+                        { name: "خل بيور", price: 13, img: "sm_oil_12.jpg" },
+                        { name: "طحينة البوادي صغيرة", price: 30, img: "sm_oil_13.jpg" },
+                        { name: "طحينة البوادي كبيرة", price: 60, img: "sm_oil_14.jpg" },
+                        { name: "طحينة سايبة الكيلو", price: 200, img: "sm_oil_15.jpg" },
+                        { name: "طحينة سايبة الربع", price: 50, img: "sm_oil_16.jpg" }
+                    ]
+                },
+                { 
+                    category: "العسل والمربى والمخللات", 
+                    items: [
+                        { name: "عسل البوادي نصف كيلو", price: 30, img: "sm_hon_1.jpg" },
+                        { name: "عسل البوادي 1 كيلو", price: 50, img: "sm_hon_2.jpg" },
+                        { name: "عسل مورنيا 2 كيلو", price: 120, img: "sm_hon_3.jpg" },
+                        { name: "عسل أبيض السواح 1 كيلو", price: 130, img: "sm_hon_4.jpg" },
+                        { name: "عسل أبيض السواح نصف كيلو", price: 70, img: "sm_hon_5.jpg" },
+                        { name: "مخلل (ثمن)", price: 10, img: "sm_hon_6.jpg" },
+                        { name: "جردل مخلل حار 5 كيلو", price: 100, img: "sm_hon_7.jpg" }
+                    ]
+                },
+                { 
+                    category: "الحلويات ومنتجات دريم", 
+                    items: [
+                        { name: "كيكة دريم 1 كيلو", price: 50, img: "sm_drm_1.jpg" },
+                        { name: "كيكة برتقال 1 كيلو", price: 50, img: "sm_drm_2.jpg" },
+                        { name: "كيكة شوكولاتة 1 كيلو", price: 50, img: "sm_drm_3.jpg" },
+                        { name: "كيكة فانيليا 1 كيلو", price: 50, img: "sm_drm_4.jpg" },
+                        { name: "كيكة فراولة 1 كيلو", price: 50, img: "sm_drm_5.jpg" },
+                        { name: "كريم شانتيه", price: 20, img: "sm_drm_6.jpg" },
+                        { name: "كيك شيف", price: 8, img: "sm_drm_7.jpg" },
+                        { name: "فانيليا دريم", price: 1.5, img: "sm_drm_8.jpg" },
+                        { name: "جيلي دريم", price: 15, img: "sm_drm_9.jpg" },
+                        { name: "جيلي فراولة", price: 15, img: "sm_drm_10.jpg" },
+                        { name: "جيلي مشمش", price: 15, img: "sm_drm_11.jpg" },
+                        { name: "جيلي مانجا", price: 15, img: "sm_drm_12.jpg" },
+                        { name: "كريم كراميل فردي", price: 20, img: "sm_drm_13.jpg" },
+                        { name: "دقيق مغلف حلو الشام 1 كيلو", price: 25, img: "sm_drm_14.jpg" },
+                        { name: "آيس كريم دريم فانيليا", price: 25, img: "sm_drm_15.jpg" },
+                        { name: "آيس كريم دريم فراولة", price: 25, img: "sm_drm_16.jpg" },
+                        { name: "آيس كريم دريم شوكولاتة", price: 25, img: "sm_drm_17.jpg" },
+                        { name: "آيس كريم دريم مانجا", price: 25, img: "sm_drm_18.jpg" }
+                    ]
+                },
+                { 
+                    category: "السناكس والشيبسي (جاجوار)", 
+                    items: [
+                        { name: "جاجوار بافس بيتزا", price: 10, img: "sm_chp_1.jpg" },
+                        { name: "جاجوار بافس جبنة حلوة", price: 10, img: "sm_chp_2.jpg" },
+                        { name: "جاجوار بالجبنة", price: 10, img: "sm_chp_3.jpg" },
+                        { name: "جاجوار بافكورن شطة وليمون", price: 10, img: "sm_chp_4.jpg" },
+                        { name: "جاجوار بافكورن جبنة كريمي", price: 10, img: "sm_chp_5.jpg" },
+                        { name: "جاجوار بافكورن ذرة حلوة", price: 10, img: "sm_chp_6.jpg" },
+                        { name: "جاجوار استنكس ميكس تشيز", price: 10, img: "sm_chp_7.jpg" },
+                        { name: "جاجوار بافس طماطم حلوة", price: 10, img: "sm_chp_8.jpg" },
+                        { name: "جاجوار استنكس تشيز برجر", price: 10, img: "sm_chp_9.jpg" },
+                        { name: "جاجوار بافس شطة حلوة", price: 10, img: "sm_chp_10.jpg" },
+                        { name: "جاجوار فشار لايت ملح خفيف", price: 10, img: "sm_chp_11.jpg" },
+                        { name: "جاجوار فشار لايت جبنة خفيفة", price: 10, img: "sm_chp_12.jpg" },
+                        { name: "جاجوار شيبس ستيك أونيون مكرمل", price: 10, img: "sm_chp_13.jpg" },
+                        { name: "جاجوار جمبري بالفلفل الحار", price: 10, img: "sm_chp_14.jpg" },
+                        { name: "جاجوار باف كينج كباب", price: 10, img: "sm_chp_15.jpg" },
+                        { name: "جاجوار لايرز جبنة بارميزان", price: 10, img: "sm_chp_16.jpg" },
+                        { name: "جاجوار شطة حلو", price: 15, img: "sm_chp_17.jpg" },
+                        { name: "جاجوار بيتزا بوب كورن", price: 10, img: "sm_chp_18.jpg" },
+                        { name: "جاجوار جبنة حارة بوب كورن", price: 10, img: "sm_chp_19.jpg" },
+                        { name: "جاجوار باف كينج سويت شيلي لايم", price: 10, img: "sm_chp_20.jpg" },
+                        { name: "جاجوار روارز وايت شوكليت", price: 15, img: "sm_chp_21.jpg" },
+                        { name: "جاجوار روارز ميلك شوكليت", price: 15, img: "sm_chp_22.jpg" }
+                    ]
+                },
+                { 
+                    category: "السناكس والشيبسي (تايجر وبيج)", 
+                    items: [
+                        { name: "تايجر رانش حار", price: 20, img: "sm_chp_23.jpg" },
+                        { name: "تايجر كاتل كوكيد خل وملح", price: 20, img: "sm_chp_24.jpg" },
+                        { name: "تايجر كاتل كوكيد فراخ كوري", price: 20, img: "sm_chp_25.jpg" },
+                        { name: "تايجر كاتل كوكيد جبنة بيضاء مخلل", price: 20, img: "sm_chp_26.jpg" },
+                        { name: "تايجر excellence ترافل بالأعشاب", price: 20, img: "sm_chp_27.jpg" },
+                        { name: "تايجر excellence خل وملح", price: 20, img: "sm_chp_28.jpg" },
+                        { name: "تايجر فاير ستورم", price: 10, img: "sm_chp_29.jpg" },
+                        { name: "تايجر تشيكن لافا", price: 10, img: "sm_chp_30.jpg" },
+                        { name: "تايجر excellence ليمون حلو", price: 20, img: "sm_chp_31.jpg" },
+                        { name: "تايجر ليمون حلو", price: 15, img: "sm_chp_32.jpg" },
+                        { name: "بيج شيبس كاتل كلاسيك", price: 15, img: "sm_chp_33.jpg" },
+                        { name: "بيج شيبس صلصة حلوة", price: 10, img: "sm_chp_34.jpg" },
+                        { name: "بيج شيبس كاتل استيك بصل مكرمل", price: 20, img: "sm_chp_35.jpg" },
+                        { name: "بيج شيبس كاتل الهيمالايا والخل", price: 15, img: "sm_chp_36.jpg" },
+                        { name: "بيج شيبس كاتل ساور كريم", price: 20, img: "sm_chp_37.jpg" },
+                        { name: "بيج شيبس كاتل جبنة متبلة", price: 20, img: "sm_chp_38.jpg" },
+                        { name: "شيبسي تايجر جبنة متبلة", price: 10, img: "sm_chp_39.jpg" },
+                        { name: "شيبسي بيج كباب مشوي", price: 10, img: "sm_chp_40.jpg" },
+                        { name: "شيبسي بيج ليمون حلو", price: 10, img: "sm_chp_41.jpg" },
+                        { name: "شيبسي تايجر كباب", price: 10, img: "sm_chp_42.jpg" },
+                        { name: "شيبسي تايجر ميكس جبنة", price: 10, img: "sm_chp_43.jpg" },
+                        { name: "شيبسي تايجر طماطم", price: 10, img: "sm_chp_44.jpg" },
+                        { name: "شيبسي تايجر فلفل حلو", price: 10, img: "sm_chp_45.jpg" },
+                        { name: "شيبسي excellence", price: 15, img: "sm_chp_46.jpg" },
+                        { name: "شيبسي بيج جبنة متبلة", price: 10, img: "sm_chp_48.jpg" },
+                        { name: "شيبسي بيج خل وملح", price: 10, img: "sm_chp_49.jpg" },
+                        { name: "بلانس ليمون حلو", price: 15, img: "sm_chp_50.jpg" },
+                        { name: "بلانس فلفل حلو", price: 15, img: "sm_chp_51.jpg" },
+                        { name: "بوفا مقرمشات سورية جبنة", price: 25, img: "sm_chp_52.jpg" }
+                    ]
+                },
+                { 
+                    category: "الآيس كريم", 
+                    items: [
+                        { name: "ميجا فانيليا استيك", price: 25, img: "sm_ice_1.jpg" },
+                        { name: "ميجا وايت شوكولاتة استيك", price: 25, img: "sm_ice_2.jpg" },
+                        { name: "ميجا توت استيك", price: 25, img: "sm_ice_3.jpg" },
+                        { name: "ميجا شوكولاتة استيك", price: 25, img: "sm_ice_4.jpg" },
+                        { name: "فرايداي فريسكا فانيليا كراميل", price: 15, img: "sm_ice_5.jpg" },
+                        { name: "فرايداي فولكانو دارك شوكولاتة", price: 12, img: "sm_ice_6.jpg" },
+                        { name: "فرايداي كومبو فانيليا كوكيز", price: 10, img: "sm_ice_7.jpg" },
+                        { name: "فرايداي سوبر فاميلي مانجو", price: 65, img: "sm_ice_8.jpg" },
+                        { name: "فرايداي اسنيكرز كوكيز استيك", price: 10, img: "sm_ice_9.jpg" },
+                        { name: "فرايداي اسنيكرز شوكولاتة استيك", price: 10, img: "sm_ice_10.jpg" },
+                        { name: "فرايداي بطيخ استيك", price: 5, img: "sm_ice_11.jpg" },
+                        { name: "فرايداي مانجو زبدة استيك", price: 7, img: "sm_ice_12.jpg" },
+                        { name: "فرايداي فرايتاج شوكولاتة بندق كونو", price: 15, img: "sm_ice_13.jpg" },
+                        { name: "فرايداي فانيليا بقطع فراولة صوص", price: 15, img: "sm_ice_14.jpg" },
+                        { name: "فرايداي فولكانو فانيليا استيك", price: 12, img: "sm_ice_15.jpg" },
+                        { name: "فرايداي شوكولاتة كوكيز", price: 10, img: "sm_ice_16.jpg" },
+                        { name: "فرايداي فانيليا صوص كراميل", price: 15, img: "sm_ice_17.jpg" },
+                        { name: "فرايداي سوبر فاميلي فانيليا", price: 65, img: "sm_ice_18.jpg" },
+                        { name: "فرايداي بوب كانتالوب استيك", price: 5, img: "sm_ice_19.jpg" },
+                        { name: "كرنافاليتا فانيليا علبة 500 جرام", price: 70, img: "sm_ice_20.jpg" },
+                        { name: "كرنافاليتا فانيليا شوكولاتة علبة", price: 70, img: "sm_ice_21.jpg" },
+                        { name: "كرنافاليتا فانيليا مانجو علبة", price: 70, img: "sm_ice_22.jpg" },
+                        { name: "اسكويز استيك توت", price: 10, img: "sm_ice_23.jpg" },
+                        { name: "اسكويز استيك مانجو", price: 10, img: "sm_ice_24.jpg" },
+                        { name: "دولسي أسطورة صوص شوكولاتة", price: 10, img: "sm_ice_25.jpg" },
+                        { name: "دولسي فانيليا صوص شوكولاتة", price: 10, img: "sm_ice_26.jpg" },
+                        { name: "دولسي سوبر مغطى شوكولاتة", price: 10, img: "sm_ice_27.jpg" },
+                        { name: "كيمو كونو شوكولاتة فانيليا", price: 10, img: "sm_ice_28.jpg" },
+                        { name: "كيمو كونو فانيليا", price: 10, img: "sm_ice_29.jpg" }
+                    ]
+                },
+                { 
+                    category: "الصوصات", 
+                    items: [
+                        { name: "جود فرانس كاتشب 200 مل حار", price: 30, img: "sm_sau_1.jpg" },
+                        { name: "جود فرانس كاتشب 200 مل بارد", price: 30, img: "sm_sau_2.jpg" },
+                        { name: "جود فرانس مايونيز", price: 35, img: "sm_sau_3.jpg" },
+                        { name: "هاينز كاتشب 285 جرام", price: 50, img: "sm_sau_4.jpg" },
+                        { name: "هاينز مايونيز 285 جرام", price: 50, img: "sm_sau_5.jpg" },
+                        { name: "هاينز حار 285 جرام", price: 50, img: "sm_sau_6.jpg" },
+                        { name: "هاينز صغير 125 جرام حار", price: 30, img: "sm_sau_7.jpg" },
+                        { name: "هاينز صغير 125 جرام بارد", price: 30, img: "sm_sau_8.jpg" },
+                        { name: "هاينز صغير 125 جرام مايونيز", price: 30, img: "sm_sau_9.jpg" },
+                        { name: "هاينز صغير 125 جرام مسترده", price: 30, img: "sm_sau_10.jpg" },
+                        { name: "ظرف كاتشب صغير", price: 2, img: "sm_sau_11.jpg" },
+                        { name: "ظرف مايونيز صغير", price: 3, img: "sm_sau_12.jpg" },
+                        { name: "بابا صوص 350 جرام تومية", price: 65, img: "sm_sau_13.jpg" },
+                        { name: "بابا صوص 350 جرام رانش", price: 65, img: "sm_sau_14.jpg" },
+                        { name: "بابا صوص 350 جرام برجر", price: 65, img: "sm_sau_15.jpg" },
+                        { name: "بابا صوص 350 جرام سويت شيلي", price: 65, img: "sm_sau_16.jpg" }
+                    ]
+                },
+                { 
+                    category: "المشروبات الغازية", 
+                    items: [
+                        { name: "بيبسي 400 مل", price: 15, img: "sm_soda_1.jpg" },
+                        { name: "سيفن 400 مل", price: 15, img: "sm_soda_2.jpg" },
+                        { name: "ماكسي كولا 400 مل", price: 12, img: "sm_soda_3.jpg" },
+                        { name: "ماكسي ليمون نعناع 400 مل", price: 12, img: "sm_soda_4.jpg" },
+                        { name: "ماكسي برتقال 400 مل", price: 12, img: "sm_soda_5.jpg" },
+                        { name: "ماكسي أناناس 400 مل", price: 12, img: "sm_soda_6.jpg" },
+                        { name: "فيوري 400 مل", price: 20, img: "sm_soda_7.jpg" },
+                        { name: "ستينج فراولة 400 مل", price: 15, img: "sm_soda_8.jpg" },
+                        { name: "ستينج شعير زجاج 275 مل", price: 15, img: "sm_soda_9.jpg" },
+                        { name: "ستينج فراولة زجاج 275 مل", price: 15, img: "sm_soda_10.jpg" },
+                        { name: "شويبس رمان 250 مل", price: 12, img: "sm_soda_11.jpg" },
+                        { name: "شويبس أناناس 250 مل", price: 12, img: "sm_soda_12.jpg" },
+                        { name: "شويبس ليمون 250 مل", price: 12, img: "sm_soda_13.jpg" },
+                        { name: "ريدبول 250 مل", price: 60, img: "sm_soda_14.jpg" },
+                        { name: "شويبس أناناس 240 مل", price: 15, img: "sm_soda_15.jpg" },
+                        { name: "ميرندا 240 مل", price: 15, img: "sm_soda_16.jpg" },
+                        { name: "شويبس رمان 240 مل", price: 15, img: "sm_soda_17.jpg" },
+                        { name: "تويست مانجا وخوخ 240 مل", price: 15, img: "sm_soda_18.jpg" },
+                        { name: "تويست فراولة 240 مل", price: 15, img: "sm_soda_19.jpg" },
+                        { name: "تويست توت 240 مل", price: 15, img: "sm_soda_20.jpg" },
+                        { name: "فيروز أناناس 330 مل", price: 16, img: "sm_soda_21.jpg" },
+                        { name: "بيريل 330 مل", price: 18, img: "sm_soda_22.jpg" },
+                        { name: "كوكاكولا 240 مل", price: 15, img: "sm_soda_23.jpg" },
+                        { name: "بيبسي 240 مل", price: 15, img: "sm_soda_24.jpg" },
+                        { name: "فانتا 240 مل", price: 15, img: "sm_soda_25.jpg" },
+                        { name: "سيفن 240 مل", price: 15, img: "sm_soda_26.jpg" },
+                        { name: "1.5 لتر بيبسي", price: 35, img: "sm_soda_27.jpg" },
+                        { name: "1.5 لتر سيفن", price: 35, img: "sm_soda_28.jpg" },
+                        { name: "1.5 لتر برتقال", price: 35, img: "sm_soda_29.jpg" },
+                        { name: "2.5 لتر بيبسي", price: 40, img: "sm_soda_30.jpg" },
+                        { name: "2.5 لتر سيفن", price: 40, img: "sm_soda_31.jpg" },
+                        { name: "2.5 لتر برتقال", price: 40, img: "sm_soda_32.jpg" },
+                        { name: "1 لتر شويبس رمان", price: 30, img: "sm_soda_33.jpg" },
+                        { name: "1 لتر شويبس ليمون", price: 30, img: "sm_soda_34.jpg" },
+                        { name: "1 لتر شويبس أناناس", price: 30, img: "sm_soda_35.jpg" },
+                        { name: "2 لتر شويبس رمان", price: 30, img: "sm_soda_36.jpg" },
+                        { name: "2 لتر شويبس أناناس", price: 30, img: "sm_soda_37.jpg" },
+                        { name: "2 لتر شويبس ليمون", price: 30, img: "sm_soda_38.jpg" },
+                        { name: "1 لتر ماكسي شعير", price: 25, img: "sm_soda_39.jpg" },
+                        { name: "1 لتر ماكسي كولا", price: 25, img: "sm_soda_40.jpg" },
+                        { name: "1 لتر ماكسي برتقال", price: 25, img: "sm_soda_41.jpg" },
+                        { name: "1 لتر ماكسي ليمون", price: 25, img: "sm_soda_42.jpg" },
+                        { name: "2 لتر ماكسي شعير", price: 35, img: "sm_soda_43.jpg" },
+                        { name: "2 لتر ماكسي كولا", price: 35, img: "sm_soda_44.jpg" },
+                        { name: "2 لتر ماكسي برتقال", price: 35, img: "sm_soda_45.jpg" },
+                        { name: "2 لتر ماكسي ليمون", price: 35, img: "sm_soda_46.jpg" }
+                    ]
+                },
+                { 
+                    category: "المياه والعصائر", 
+                    items: [
+                        { name: "مياه معدنية صغيرة", price: 5, img: "sm_water_1.jpg" },
+                        { name: "مياه معدنية كبيرة", price: 10, img: "sm_water_2.jpg" },
+                        { name: "عصير بخيره تفاح 200 مل", price: 5, img: "sm_juice_1.jpg" },
+                        { name: "عصير بخيره مانجا 200 مل", price: 5, img: "sm_juice_2.jpg" },
+                        { name: "عصير بخيره جوافة 200 مل", price: 5, img: "sm_juice_3.jpg" },
+                        { name: "عصير جهينه برتقال 235 مل", price: 10, img: "sm_juice_4.jpg" },
+                        { name: "عصير جهينه كوكتيل 235 مل", price: 10, img: "sm_juice_5.jpg" },
+                        { name: "عصير جهينه تفاح 235 مل", price: 10, img: "sm_juice_6.jpg" },
+                        { name: "عصير جهينه جوافة 235 مل", price: 10, img: "sm_juice_7.jpg" },
+                        { name: "عصير جهينه جوافة لتر", price: 35, img: "sm_juice_8.jpg" },
+                        { name: "عصير جهينه تفاح لتر", price: 35, img: "sm_juice_9.jpg" },
+                        { name: "عصير جهينه برتقال لتر", price: 35, img: "sm_juice_10.jpg" },
+                        { name: "حليب جهينه مكس فراولة 200 مل", price: 15, img: "sm_juice_11.jpg" },
+                        { name: "حليب جهينه مكس شوكولاتة 200 مل", price: 15, img: "sm_juice_12.jpg" }
+                    ]
+                },
+                { 
+                    category: "مستلزمات أخرى", 
+                    items: [
+                        { name: "قالب خميرة فورية الملك", price: 90, img: "sm_other_1.jpg" },
+                        { name: "زبدة فيرن", price: 150, img: "sm_other_2.jpg" },
+                        { name: "كبريت كبير", price: 10, img: "sm_other_3.jpg" },
+                        { name: "كبريت صغير", price: 10, img: "sm_other_4.jpg" }
+                    ]
+                }
+            ]
+        };
+
+        window.cart = []; window.userAddresses = []; window.currentAddressIndex = 0;
+        window.userPhone = ""; window.userName = ""; window.isCheckoutAlert = false;
+        
+        window.onload = function() {
+            if(localStorage.getItem('isLoggedIn') === 'true') {
+                window.userPhone = localStorage.getItem('userPhone') || "";
+                window.userName = localStorage.getItem('userName') || "العميل";
+                
+                try {
+                    let savedAddrs = JSON.parse(localStorage.getItem('userAddresses'));
+                    window.userAddresses = Array.isArray(savedAddrs) ? savedAddrs : [];
+                } catch(e) { window.userAddresses = []; }
+                
+                window.currentAddressIndex = localStorage.getItem('currentAddressIndex') || 0;
+                
+                document.getElementById('acc-name-display').innerText = window.userName;
+                document.getElementById('acc-phone-display').innerText = window.userPhone;
+                
+                if(localStorage.getItem('userEmail') === 'adminaltayyar001@gmail.com') {
+                    document.getElementById('btn-admin-dashboard').style.display = 'flex';
+                }
+
+                window.updateAddressUI();
+                window.showScreen('screen-home', true);
+                
+                try { window.startBannerSlider(); } catch(e) {}
+                
+                if(window.fetchMenuFromFirebase) window.fetchMenuFromFirebase();
+                if(window.fetchSettingsFromFirebase) window.fetchSettingsFromFirebase();
+
+            } else {
+                window.showScreen('screen-login', false);
+            }
+        };
+
+        window.updateAddressUI = function() {
+            if(window.userAddresses && window.userAddresses.length > 0) {
+                let idx = window.currentAddressIndex;
+                if(idx >= window.userAddresses.length) idx = 0;
+                document.getElementById('user-address').innerText = window.userAddresses[idx];
+            } else {
+                document.getElementById('user-address').innerText = "أضف عنوان";
+            }
+        }
+
+        window.showScreen = function(screenId, pushHistory = true) {
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+
+            const nav = document.getElementById('main-nav');
+            if(screenId === 'screen-login' || screenId === 'screen-otp' || screenId === 'screen-location') {
+                nav.style.display = 'none';
+            } else {
+                nav.style.display = 'flex';
+            }
+
+            if(pushHistory && screenId !== 'screen-login') {
+                history.pushState({ screen: screenId }, "", `#${screenId}`);
+            }
+        }
+
+        window.onpopstate = function(event) {
+            if(event.state && event.state.screen) window.showScreen(event.state.screen, false);
+            else if(localStorage.getItem('isLoggedIn') === 'true') window.showScreen('screen-home', false);
+            else window.showScreen('screen-login', false);
+        };
+
+        window.navTo = function(screenId, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            window.showScreen(screenId, true);
+            if(screenId === 'screen-cart') window.renderCart();
+            if(screenId === 'screen-addresses') window.renderAddresses();
+            if(screenId === 'screen-admin') window.loadAdminMenu();
+        }
+
+        // ---------- تعديل بيانات المستخدم ----------
+        window.editProfile = async function() {
+            let newName = prompt("تعديل الاسم بالكامل:", window.userName);
+            if(newName === null) return; 
+            
+            let newPhone = prompt("تعديل رقم الهاتف:", window.userPhone);
+            if(newPhone === null) return; 
+
+            if(newName.trim() !== "" && newPhone.trim() !== "") {
+                window.userName = newName.trim();
+                window.userPhone = newPhone.trim();
+                
+                localStorage.setItem('userName', window.userName);
+                localStorage.setItem('userPhone', window.userPhone);
+                
+                document.getElementById('acc-name-display').innerText = window.userName;
+                document.getElementById('acc-phone-display').innerText = window.userPhone;
+                
+                if(window.updateUserProfileInFirebase) {
+                    window.updateUserProfileInFirebase(window.userName, window.userPhone);
+                }
+                window.showToast("تم تحديث بياناتك بنجاح ✅");
+            } else {
+                alert("برجاء إدخال بيانات صحيحة.");
+            }
+        };
+
+        // ---------- دوال لوحة تحكم الإدارة (الداش بورد) ----------
+        window.loadAdminMenu = function() {
+            const shopName = document.getElementById('admin-shop-select').value;
+            const container = document.getElementById('admin-menu-list');
+            container.innerHTML = "";
+            
+            if(window.shopMenus[shopName]) {
+                window.shopMenus[shopName].forEach((cat, catIndex) => {
+                    container.innerHTML += `
+                        <div class="menu-category">
+                            <span>${cat.category}</span>
+                            <i class="fa-solid fa-pen" style="color:var(--primary); cursor:pointer; font-size:18px;" onclick="window.editCategoryName('${shopName}', ${catIndex})"></i>
+                        </div>
+                    `;
+                    cat.items.forEach((item, itemIndex) => {
+                        let priceDisp = item.prices ? `أسعار متعددة` : `${item.price} ج.م`;
+                        let imgSrc = item.img ? item.img : 'لا توجد صورة';
+                        
+                        let folderName = "market";
+                        if(shopName.includes("تكه")) folderName = "taka"; else if(shopName.includes("الاصدقاء")) folderName = "friends"; else if(shopName.includes("وفليانو")) folderName = "wafeliano"; else if(shopName.includes("الارزاق")) folderName = "arzak"; else if(shopName.includes("كبداكي")) folderName = "kabdaky"; else if(shopName.includes("ابن البلد")) folderName = "ebnalbalad"; else if(shopName.includes("الهندي")) folderName = "hindi";
+                        
+                        let realImgSrc = item.img.includes('http') ? item.img : `images/menus/${folderName}/${item.img}`;
+
+                        container.innerHTML += `
+                            <div class="admin-item-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="flex:1;">
+                                        <div style="font-weight:bold;">${item.name}</div>
+                                        <div style="color:var(--primary); font-size:14px; margin-bottom:5px;">السعر: ${priceDisp}</div>
+                                    </div>
+                                    <img src="${realImgSrc}" onerror="this.src='https://placehold.co/50x50/eee/999?text=صورة'" class="preview-img" id="preview-${shopName.replace(/\s/g,'')}-${catIndex}-${itemIndex}">
+                                </div>
+                                <div class="admin-actions">
+                                    <label class="btn-outline" style="cursor:pointer; background:#FF9800; color:white; border:none; border-radius:8px; padding:8px; text-align:center; flex:1;">
+                                        <i class="fa-solid fa-camera"></i> صورة
+                                        <input type="file" accept="image/*" style="display:none;" onchange="window.uploadImageToFirebase(this, '${shopName}', ${catIndex}, ${itemIndex})">
+                                    </label>
+                                    <button class="btn-edit" onclick="window.editItem('${shopName}', ${catIndex}, ${itemIndex})"><i class="fa-solid fa-pen"></i> السعر</button>
+                                    <button class="btn-delete" onclick="window.deleteItem('${shopName}', ${catIndex}, ${itemIndex})"><i class="fa-solid fa-trash"></i> حذف</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+            } else {
+                container.innerHTML = "<p style='text-align:center; padding:20px;'>لا توجد بيانات لهذا المطعم</p>";
+            }
+        };
+
+        window.addNewShop = async function() {
+            const newShopName = document.getElementById('new-shop-name').value.trim();
+            if(!newShopName) return alert("اكتب اسم المحل الجديد");
+            
+            if(!window.shopMenus[newShopName]) {
+                window.shopMenus[newShopName] = [];
+            }
+            
+            let select = document.getElementById('admin-shop-select');
+            let option = document.createElement("option");
+            option.text = newShopName; option.value = newShopName;
+            select.add(option); select.value = newShopName;
+
+            if(window.saveShopToFirebase) {
+                await window.saveShopToFirebase(newShopName, window.shopMenus[newShopName]);
+            }
+            window.showToast("تم إنشاء المحل بنجاح ✅");
+            document.getElementById('new-shop-name').value = "";
+            window.loadAdminMenu();
+        };
+
+        window.editCategoryName = async function(shopName, catIndex) {
+            let oldName = window.shopMenus[shopName][catIndex].category;
+            let newName = prompt(`تعديل اسم القسم (${oldName}):`, oldName);
+            if(newName && newName.trim() !== "") {
+                window.shopMenus[shopName][catIndex].category = newName.trim();
+                if(window.saveShopToFirebase) {
+                    await window.saveShopToFirebase(shopName, window.shopMenus[shopName]);
+                }
+                window.showToast("تم تغيير اسم القسم ✅");
+                window.loadAdminMenu();
+            }
+        };
+
+        window.showAddProductForm = function() {
+            const form = document.getElementById('admin-add-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.saveNewProduct = function() {
+            const shopName = document.getElementById('admin-shop-select').value;
+            const catName = document.getElementById('add-cat').value;
+            const itemName = document.getElementById('add-name').value;
+            const itemPrice = parseFloat(document.getElementById('add-price').value);
+            const fileInput = document.getElementById('add-img-file');
+
+            if(!catName || !itemName || !itemPrice) { alert("أكمل البيانات الأساسية"); return; }
+
+            if(fileInput.files.length > 0) {
+                document.getElementById('upload-loader').style.display = 'block';
+                window.uploadImageForNewProduct(fileInput.files[0], shopName, catName, itemName, itemPrice);
+            } else {
+                window.addProductToMenu(shopName, catName, itemName, itemPrice, "");
+            }
+        };
+
+        window.addProductToMenu = async function(shopName, catName, itemName, itemPrice, imgUrl) {
+            if(!window.shopMenus[shopName]) window.shopMenus[shopName] = [];
+            let category = window.shopMenus[shopName].find(c => c.category === catName);
+            if(!category) {
+                category = { category: catName, items: [] };
+                window.shopMenus[shopName].push(category);
+            }
+            category.items.push({ name: itemName, price: itemPrice, img: imgUrl });
+            
+            if(window.saveShopToFirebase) {
+                await window.saveShopToFirebase(shopName, window.shopMenus[shopName]);
+            }
+            
+            window.showToast("تم إضافة المنتج بنجاح ✅");
+            document.getElementById('admin-add-form').style.display = 'none';
+            document.getElementById('upload-loader').style.display = 'none';
+            window.loadAdminMenu();
+        };
+
+        window.editItem = async function(shopName, catIndex, itemIndex) {
+            let item = window.shopMenus[shopName][catIndex].items[itemIndex];
+            if(item.prices) { alert("المنتج متعدد الأسعار لا يمكن تعديله من هنا حالياً."); return; }
+            let newPrice = prompt(`تعديل السعر لـ (${item.name}):`, item.price);
+            if(newPrice !== null && newPrice !== "") {
+                item.price = parseFloat(newPrice);
+                if(window.saveShopToFirebase) {
+                    await window.saveShopToFirebase(shopName, window.shopMenus[shopName]);
+                }
+                window.showToast("تم تعديل السعر بنجاح ✅"); 
+                window.loadAdminMenu();
+            }
+        };
+
+        window.deleteItem = async function(shopName, catIndex, itemIndex) {
+            if(confirm("متأكد من الحذف نهائياً؟")) {
+                window.shopMenus[shopName][catIndex].items.splice(itemIndex, 1);
+                if(window.saveShopToFirebase) {
+                    await window.saveShopToFirebase(shopName, window.shopMenus[shopName]);
+                }
+                window.showToast("تم الحذف بنجاح ✅");
+                window.loadAdminMenu();
+            }
+        };
+
+        // ---------- إدارة العناوين ----------
+        window.renderAddresses = function() {
+            const list = document.getElementById('addresses-list'); list.innerHTML = "";
+            if(window.userAddresses) {
+                window.userAddresses.forEach((addr, index) => {
+                    let isSelected = index == window.currentAddressIndex ? "selected" : "";
+                    let checkIcon = index == window.currentAddressIndex ? `<i class="fa-solid fa-circle-check" style="color:var(--primary); font-size:20px;"></i>` : ``;
+                    list.innerHTML += `<div class="address-card ${isSelected}" onclick="window.selectAddress(${index})"><div><div style="font-weight:bold; margin-bottom:5px;">العنوان ${index + 1}</div><div style="font-size:13px; color:var(--text-muted);">${addr}</div></div>${checkIcon}</div>`;
+                });
+            }
+        }
+        window.addNewAddress = function() { 
+            let newAddr = prompt("أدخل العنوان الجديد:"); 
+            if(newAddr) { 
+                if(!window.userAddresses) window.userAddresses = []; 
+                window.userAddresses.push(newAddr); 
+                localStorage.setItem('userAddresses', JSON.stringify(window.userAddresses)); 
+                window.renderAddresses(); 
+            } 
+        }
+        window.selectAddress = function(index) { 
+            window.currentAddressIndex = index; 
+            localStorage.setItem('currentAddressIndex', window.currentAddressIndex); 
+            window.updateAddressUI(); 
+            window.renderAddresses(); 
+            setTimeout(() => window.navTo('screen-home', document.getElementById('nav-home')), 300); 
+        }
+
+        // ---------- فلترة الأقسام والبحث ----------
+        window.filterShops = function(category) {
+            document.getElementById('search-results-area').style.display = 'none'; document.getElementById('home-content-area').style.display = 'block'; document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.shop-circle').forEach(shop => { if(category === 'all' || shop.getAttribute('data-cat') === category) shop.style.display = 'block'; else shop.style.display = 'none'; });
+            document.getElementById('shops-list').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        window.performSearch = function() {
+            let query = document.getElementById('searchInput').value.trim().toLowerCase();
+            let homeContent = document.getElementById('home-content-area'); let searchArea = document.getElementById('search-results-area'); let container = document.getElementById('search-container');
+            if(query.length === 0) { searchArea.style.display = 'none'; homeContent.style.display = 'block'; return; }
+            homeContent.style.display = 'none'; searchArea.style.display = 'block'; container.innerHTML = ""; let matchCount = 0;
+            for (let shop in window.shopMenus) {
+                window.shopMenus[shop].forEach(cat => {
+                    cat.items.forEach((item, index) => {
+                        if(item.name.toLowerCase().includes(query) || cat.category.toLowerCase().includes(query) || shop.toLowerCase().includes(query)) {
+                            matchCount++;
+                            let priceHTML = ""; let selectId = `search-select-${shop.replace(/\s/g, '')}-${index}`;
+                            if (item.prices) { let options = item.prices.map((p, i) => `<option value="${p}">${item.sizes[i]} - ${p} ج.م</option>`).join(''); priceHTML = `<select id="${selectId}" class="product-price-select">${options}</select>`; } 
+                            else priceHTML = `<div class="product-price" id="${selectId}" data-price="${item.price}">${item.price} ج.م</div>`;
+                            
+                            let folderName = "market";
+                            if(shop.includes("تكه")) folderName = "taka"; else if(shop.includes("الاصدقاء")) folderName = "friends"; else if(shop.includes("وفليانو")) folderName = "wafeliano"; else if(shop.includes("الارزاق")) folderName = "arzak"; else if(shop.includes("كبداكي")) folderName = "kabdaky"; else if(shop.includes("ابن البلد")) folderName = "ebnalbalad"; else if(shop.includes("الهندي")) folderName = "hindi";
+                            let realImgSrc = item.img.includes('http') ? item.img : `images/menus/${folderName}/${item.img}`;
+
+                            container.innerHTML += `<div class="product-card"><div class="product-img"><img src="${realImgSrc}" onerror="this.src='https://placehold.co/70x70/eee/999?text=صورة'"></div><div class="product-details"><div class="product-name">${item.name}</div><div class="product-shop-name">${shop}</div>${priceHTML}</div><button class="add-btn" onclick="window.addToCart('${item.name}', '${selectId}', '${shop}')"><i class="fa-solid fa-plus"></i></button></div>`;
+                        }
+                    });
+                });
+            }
+            document.getElementById('search-count').innerText = `(${matchCount} نتيجة)`;
+            if(matchCount === 0) container.innerHTML = `<div class="empty-state">لا توجد نتائج مطابقة لبحثك</div>`;
+        }
+
+        // ---------- عرض المنيو ----------
+        window.openShop = function(shopName) {
+            document.getElementById('shop-title').innerText = shopName; const container = document.getElementById('menu-container'); container.innerHTML = "";
+            let folderName = "market";
+            if(shopName.includes("تكه")) folderName = "taka"; else if(shopName.includes("الاصدقاء")) folderName = "friends"; else if(shopName.includes("وفليانو")) folderName = "wafeliano"; else if(shopName.includes("الارزاق")) folderName = "arzak"; else if(shopName.includes("كبداكي")) folderName = "kabdaky"; else if(shopName.includes("ابن البلد")) folderName = "ebnalbalad"; else if(shopName.includes("الهندي")) folderName = "hindi";
+            
+            if (window.shopMenus[shopName]) {
+                window.shopMenus[shopName].forEach(cat => {
+                    container.innerHTML += `<div class="menu-category">${cat.category}</div>`;
+                    cat.items.forEach((item, index) => {
+                        let priceHTML = ""; let selectId = `select-${shopName.replace(/\s/g, '')}-${index}`;
+                        if (item.prices) { let options = item.prices.map((p, i) => `<option value="${p}">${item.sizes[i]} - ${p} ج.م</option>`).join(''); priceHTML = `<select id="${selectId}" class="product-price-select">${options}</select>`; } 
+                        else priceHTML = `<div class="product-price" id="${selectId}" data-price="${item.price}">${item.price} ج.م</div>`;
+                        
+                        let realImgSrc = item.img.includes('http') ? item.img : `images/menus/${folderName}/${item.img}`;
+
+                        container.innerHTML += `<div class="product-card"><div class="product-img"><img src="${realImgSrc}" onerror="this.src='https://placehold.co/70x70/eee/999?text=صورة'"></div><div class="product-details"><div class="product-name">${item.name}</div>${priceHTML}</div><button class="add-btn" onclick="window.addToCart('${item.name}', '${selectId}', '${shopName}')"><i class="fa-solid fa-plus"></i></button></div>`;
+                    });
+                });
+            } else container.innerHTML = `<div class="empty-state">المنيو قيد التحديث</div>`;
+            window.navTo('screen-shop', null);
+        }
+
+        // ---------- الصيدلية ورفع الصور ----------
+        window.openPharmacy = function() { document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); window.showScreen('screen-pharmacy'); }
+        
+        window.pharmacyMediaUrl = ""; // لحفظ رابط الصورة المرفوعة للروشتة
+        
+        window.uploadPharmacyMedia = async function(inputElement) {
+            const file = inputElement.files[0];
+            if(!file) return;
+
+            document.getElementById('pharmacy-upload-loader').style.display = 'block';
+            document.getElementById('pharmacy-upload-status').style.display = 'none';
+            window.showToast("جاري رفع الروشتة... ⏳");
+
+            const formData = new FormData();
+            formData.append("image", file);
+            const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
+                const data = await response.json();
+
+                if (data.success) {
+                    window.pharmacyMediaUrl = data.data.url;
+                    document.getElementById('pharmacy-upload-status').style.display = 'block';
+                    window.showToast("تم رفع الصورة بنجاح ✅");
+                } else {
+                    alert("حدث خطأ أثناء الرفع، جرب صورة أخرى.");
+                }
+            } catch (error) {
+                alert("تأكد من اتصالك بالإنترنت.");
+            } finally {
+                document.getElementById('pharmacy-upload-loader').style.display = 'none';
+                inputElement.value = ""; 
+            }
+        };
+
+        window.sendPharmacyOrder = function() {
+            let notes = document.getElementById('pharmacy-notes').value; 
+            let msg = `*مرحباً تطبيق الطيار 🛵*\nعندي طلب من الصيدلية:\n\n`;
+            
+            if(window.pharmacyMediaUrl !== "") {
+                msg += `🖼️ *تم إرفاق صورة الروشتة:* \n${window.pharmacyMediaUrl}\n\n`;
+            }
+
+            if (notes) msg += `📝 *ملاحظات/أدوية إضافية:* ${notes}\n`;
+
+            if(window.pharmacyMediaUrl === "" && !notes) {
+                alert("برجاء التقاط صورة للروشتة أو كتابة الأدوية المطلوبة أولاً.");
+                return;
+            }
+
+            msg += `\n📍 *العنوان:* ${window.userAddresses[window.currentAddressIndex] || 'طبهار'}\n📞 *رقم العميل:* ${window.userPhone}\n👤 *الاسم:* ${window.userName}`;
+            
+            window.open(`https://wa.me/201123153850?text=${encodeURIComponent(msg)}`, '_blank'); 
+            
+            // إعادة ضبط بعد الإرسال
+            window.pharmacyMediaUrl = "";
+            document.getElementById('pharmacy-upload-status').style.display = 'none';
+            document.getElementById('pharmacy-notes').value = "";
+            window.navTo('screen-home', document.getElementById('nav-home'));
+        }
+
+        // ---------- السلة ----------
+        window.showToast = function(message) { const toast = document.getElementById("toast"); toast.innerText = message; toast.className = "show"; setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500); }
+
+        window.addToCart = function(name, selectId, shopName) {
+            let element = document.getElementById(selectId); let price = 0; let sizeText = "";
+            if (element.tagName === "SELECT") { price = parseFloat(element.value); sizeText = " (" + element.options[element.selectedIndex].text.split(" -")[0] + ")"; } else price = parseFloat(element.getAttribute('data-price'));
+            let finalName = name + sizeText; let existing = window.cart.find(i => i.name === finalName && i.shop === shopName);
+            if(existing) existing.qty++; else window.cart.push({ name: finalName, price: price, qty: 1, shop: shopName });
+            
+            // تحديث الرقم وعمل الأنيميشن (الفلاش الأحمر)
+            const badge = document.getElementById('cart-count');
+            badge.innerText = window.cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            badge.classList.remove('cart-flash');
+            void badge.offsetWidth; // Trigger reflow to restart animation
+            badge.classList.add('cart-flash');
+
+            window.showToast("تم الإضافة للسلة بنجاح ✅");
+        }
+
+        window.renderCart = function() {
+            const container = document.getElementById('cart-container'); const checkoutBar = document.getElementById('checkout-bar');
+            if (window.cart.length === 0) { container.innerHTML = `<div class="empty-state">السلة فارغة</div>`; checkoutBar.style.display = 'none'; return; }
+            container.innerHTML = ""; let grandTotal = 0;
+            window.cart.forEach((item, index) => {
+                let itemTotal = item.price * item.qty; grandTotal += itemTotal;
+                container.innerHTML += `<div class="cart-item"><div><div style="font-weight:700; font-size:14px;">${item.name}</div><div style="font-size:12px; color:var(--text-muted);">${item.shop}</div><div style="color:var(--primary-dark); font-weight:bold; margin-top:5px;">${itemTotal} ج.م</div></div><div class="qty-control"><i class="fa-solid fa-plus" onclick="window.changeQty(${index}, 1)" style="color:var(--primary); cursor:pointer;"></i><span style="font-weight:bold; width:20px; text-align:center;">${item.qty}</span><i class="fa-solid fa-minus" onclick="window.changeQty(${index}, -1)" style="color:red; cursor:pointer;"></i></div></div>`;
+            });
+            document.getElementById('cart-total-price').innerText = grandTotal; checkoutBar.style.display = 'flex';
+        }
+
+        window.changeQty = function(index, amount) { window.cart[index].qty += amount; if (window.cart[index].qty <= 0) window.cart.splice(index, 1); document.getElementById('cart-count').innerText = window.cart.reduce((sum, item) => sum + item.qty, 0); window.renderCart(); }
+        window.confirmOrder = function() { document.getElementById('price-alert-modal').style.display = 'flex'; }
+        window.closeModal = function() { document.getElementById('price-alert-modal').style.display = 'none'; if(window.cart.length > 0) window.sendToWhatsApp(); }
+
+        window.sendToWhatsApp = function() {
+            let msg = `*مرحباً تطبيق الطيار 🛵*\nعندي طلب جديد:\n\n`; let total = 0;
+            window.cart.forEach(item => { msg += `🔸 ${item.qty}x ${item.name} (من ${item.shop})\n`; total += (item.price * item.qty); });
+            msg += `\n*الإجمالي التقريبي: ${total} ج.م* (غير شامل التوصيل)\n📍 *العنوان:* ${window.userAddresses[window.currentAddressIndex]}\n📞 *رقم العميل:* ${window.userPhone}\n👤 *الاسم:* ${window.userName}`;
+            window.open(`https://wa.me/201123153850?text=${encodeURIComponent(msg)}`, '_blank');
+            window.cart = []; document.getElementById('cart-count').innerText = "0"; window.navTo('screen-home', document.getElementById('nav-home'));
+        }
+
+        let slideIndex = 0; let sliderInterval;
+        window.startBannerSlider = function() {
+            const track = document.getElementById('bannerTrack'); const slides = document.querySelectorAll('.banner-slide'); const totalSlides = slides.length;
+            if(totalSlides === 0) return;
+            clearInterval(sliderInterval); sliderInterval = setInterval(() => { slideIndex++; if (slideIndex >= totalSlides) slideIndex = 0; track.style.transform = `translateX(${slideIndex * 100}%)`; }, 3000);
+        }
+    </script>
+
+    <!-- ⚠️ أكواد فايربيز ⚠️ -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyDVJAyK5CHqSK98MQic0l3bCWKBJGe4LAw",
+          authDomain: "al-tayyar-app.firebaseapp.com",
+          projectId: "al-tayyar-app",
+          storageBucket: "al-tayyar-app.firebasestorage.app",
+          messagingSenderId: "245227220026",
+          appId: "1:245227220026:web:3f0ed825a5526197fa9903"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // دالة تحديث اسم العميل ورقمه في فايربيز
+        window.updateUserProfileInFirebase = async function(newName, newPhone) {
+            const user = auth.currentUser;
+            if(user) {
+                try {
+                    await updateDoc(doc(db, "users", user.uid), { name: newName, phone: newPhone });
+                } catch(e) { console.error("Error updating profile in Firebase", e); }
+            }
+        };
+
+        // جلب البانرات من فايربيز
+        window.fetchSettingsFromFirebase = async function() {
+            try {
+                const docSnap = await getDoc(doc(db, "settings", "appSettings"));
+                if(docSnap.exists()) {
+                    let data = docSnap.data();
+                    if(data.banner1) document.getElementById('home-banner-1').src = data.banner1;
+                    if(data.banner2) document.getElementById('home-banner-2').src = data.banner2;
+                    if(data.banner3) document.getElementById('home-banner-3').src = data.banner3;
+                }
+            } catch(e) {}
+        };
+
+        // سحب المنيو من السيرفر عند الفتح وتحديث الـ window.shopMenus ليكون متطابق مع الداتا بيز
+        window.fetchMenuFromFirebase = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "menus"));
+                if (!querySnapshot.empty) {
+                    querySnapshot.forEach((doc) => {
+                        window.shopMenus[doc.id] = doc.data().categories; 
+                    });
+                }
+            } catch (e) {
+                console.error("خطأ في قراءة المنيو:", e);
+            }
+        };
+
+        // حفظ مطعم معين في السيرفر 
+        window.saveShopToFirebase = async function(shopName, categoriesData) {
+            try {
+                await setDoc(doc(db, "menus", shopName), { categories: categoriesData });
+            } catch(e) {
+                console.error("Error saving shop to Firebase:", e);
+            }
+        };
+
+        // تسجيل الخروج بشكل قوي وآمن
+        window.logoutUser = function() {
+            if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+                localStorage.clear();
+                document.getElementById('regName').value = ""; 
+                document.getElementById('regPhone').value = ""; 
+                document.getElementById('authEmail').value = ""; 
+                document.getElementById('authPassword').value = "";
+                document.getElementById('btn-admin-dashboard').style.display = 'none';
+                
+                window.userAddresses = [];
+                window.cart = [];
+                document.getElementById('cart-count').innerText = "0";
+
+                // نقله فورا لصفحة الدخول
+                window.showScreen('screen-login', false);
+
+                try { signOut(auth); } catch(e) {}
+            }
+        };
+
+        // الديفولت انه يكون وضع تسجيل الدخول
+        window.isLoginMode = true; 
+        
+        window.toggleAuthMode = function() {
+            window.isLoginMode = !window.isLoginMode;
+            const regFields = document.getElementById('register-fields');
+            const authTitle = document.getElementById('auth-title-text');
+            const btnAuth = document.getElementById('btn-auth');
+            const toggleBtn = document.getElementById('toggle-auth-btn');
+
+            if (window.isLoginMode) {
+                regFields.style.display = 'none';
+                authTitle.innerText = "تسجيل الدخول 👋";
+                btnAuth.innerText = "دخول";
+                toggleBtn.innerText = "ليس لديك حساب؟ إنشاء حساب جديد";
+            } else {
+                regFields.style.display = 'block';
+                authTitle.innerText = "إنشاء حساب جديد ✨";
+                btnAuth.innerText = "إنشاء حساب";
+                toggleBtn.innerText = "لديك حساب بالفعل؟ تسجيل الدخول";
+            }
+        };
+
+        window.processAuth = async function() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            
+            if(!email || !password) { alert("برجاء إدخال البريد الإلكتروني وكلمة المرور."); return; }
+
+            const btn = document.getElementById('btn-auth');
+            const loader = document.getElementById('auth-loader');
+            btn.style.display = 'none'; loader.style.display = 'block';
+
+            try {
+                if (!window.isLoginMode) { // وضع إنشاء الحساب
+                    const name = document.getElementById('regName').value.trim();
+                    const phone = document.getElementById('regPhone').value.trim();
+                    if(!name || !phone) { alert("برجاء إدخال الاسم ورقم الهاتف."); btn.style.display = 'block'; loader.style.display = 'none'; return; }
+                    
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    await setDoc(doc(db, "users", user.uid), { name: name, phone: phone, email: email, addresses: [] });
+
+                    window.userName = name; 
+                    window.userPhone = phone; 
+                    window.userAddresses = [];
+                    
+                    localStorage.setItem('userName', name); 
+                    localStorage.setItem('userPhone', phone);
+                    localStorage.setItem('userEmail', email); 
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    document.getElementById('acc-name-display').innerText = name;
+                    document.getElementById('acc-phone-display').innerText = phone;
+                    
+                    window.showScreen('screen-otp', false);
+
+                } else { // وضع تسجيل الدخول
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    const docSnap = await getDoc(doc(db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        window.userName = userData.name; window.userPhone = userData.phone;
+                        localStorage.setItem('userName', userData.name); localStorage.setItem('userPhone', userData.phone);
+                        
+                        if(userData.addresses && userData.addresses.length > 0) {
+                            window.userAddresses = userData.addresses;
+                            localStorage.setItem('userAddresses', JSON.stringify(window.userAddresses));
+                            localStorage.setItem('currentAddressIndex', 0);
+                        } else {
+                            window.userAddresses = [];
+                        }
+                    }
+
+                    localStorage.setItem('userEmail', email); localStorage.setItem('isLoggedIn', 'true');
+                    document.getElementById('acc-name-display').innerText = window.userName;
+                    document.getElementById('acc-phone-display').innerText = window.userPhone;
+                    
+                    if(email === 'adminaltayyar001@gmail.com') document.getElementById('btn-admin-dashboard').style.display = 'flex';
+                    
+                    window.showScreen('screen-otp', false);
+                }
+            } catch (error) {
+                console.error(error);
+                if(error.code === 'auth/email-already-in-use') alert("هذا البريد مسجل مسبقاً، برجاء تسجيل الدخول.");
+                else if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') alert("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+                else alert("حدث خطأ: " + error.message);
+            }
+
+            btn.style.display = 'block'; loader.style.display = 'none';
+        };
+        
+        // دالة الـ OTP الآمنة
+        window.verifyOTP = function() {
+            const btn = document.getElementById('btn-otp'); const loader = document.getElementById('otp-loader');
+            if (document.getElementById('otpInput').value === "1234") {
+                btn.style.display = 'none'; loader.style.display = 'block';
+                setTimeout(() => {
+                    try {
+                        btn.style.display = 'block'; loader.style.display = 'none';
+                        if(!window.userAddresses || window.userAddresses.length === 0) {
+                            window.showScreen('screen-location', false);
+                        } else { 
+                            window.updateAddressUI(); 
+                            window.showScreen('screen-home', true); 
+                            window.startBannerSlider(); 
+                        }
+                    } catch(e) { console.log(e); window.showScreen('screen-home', true); }
+                }, 1000);
+            } else alert("كود خاطئ! اكتب 1234");
+        }
+
+       // رفع صورة المنتج لـ ImgBB
+       window.uploadImageToFirebase = async function(inputElement, shopName, catIndex, itemIndex) {
+            const file = inputElement.files[0];
+            if(!file) return;
+
+            window.showToast("جاري رفع الصورة... ⏳");
+            
+            const formData = new FormData();
+            formData.append("image", file);
+            const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const imageUrl = data.data.url; 
+                    window.shopMenus[shopName][catIndex].items[itemIndex].img = imageUrl;
+                    await setDoc(doc(db, "menus", shopName), { categories: window.shopMenus[shopName] });
+                    window.showToast("تم تحديث الصورة بنجاح ✅");
+                    window.loadAdminMenu(); 
+                } else {
+                    alert("حدث خطأ من سيرفر الصور.");
+                }
+            } catch (error) { alert("حدث خطأ أثناء الرفع، تأكد من الإنترنت."); }
+        };
+
+        window.uploadImageForNewProduct = async function(file, shopName, catName, itemName, itemPrice) {
+            window.showToast("جاري رفع المنتج الجديد... ⏳");
+            const formData = new FormData(); formData.append("image", file);
+            const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96";
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
+                const data = await response.json();
+                
+                if(data.success) {
+                    const downloadURL = data.data.url;
+                    window.addProductToMenu(shopName, catName, itemName, itemPrice, downloadURL);
+                } else {
+                    alert("فشل رفع صورة المنتج الجديد.");
+                    document.getElementById('upload-loader').style.display = 'none';
+                }
+            } catch (error) {
+                alert("حدث خطأ أثناء الرفع.");
+                document.getElementById('upload-loader').style.display = 'none';
+            }
+        };
+
+        // رفع صور البانرات للإعدادات
+        window.uploadBanner = async function(inputElement, bannerNumber) {
+            const file = inputElement.files[0];
+            if(!file) return;
+
+            window.showToast(`جاري رفع بانر ${bannerNumber}... ⏳`);
+            const formData = new FormData(); formData.append("image", file);
+            const imgbbApiKey = "22831ba157957ccb1c95df4b56457e96"; 
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: "POST", body: formData });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const bannerUrl = data.data.url;
+                    await setDoc(doc(db, "settings", "appSettings"), { [`banner${bannerNumber}`]: bannerUrl }, { merge: true });
+                    document.getElementById(`home-banner-${bannerNumber}`).src = bannerUrl;
+                    window.showToast("تم تغيير البانر بنجاح ✅");
+                }
+            } catch (error) { alert("حدث خطأ أثناء رفع البانر."); }
+        };
+
+    </script>
+</body>
+</html>
