@@ -1533,11 +1533,13 @@
             if(query.length === 0) { searchArea.style.display = 'none'; homeContent.style.display = 'block'; return; }
             homeContent.style.display = 'none'; searchArea.style.display = 'block'; container.innerHTML = ""; let matchCount = 0;
             for (let shop in window.shopMenus) {
-                window.shopMenus[shop].forEach(cat => {
+                // تم إضافة catIndex لحل مشكلة تداخل الأسعار
+                window.shopMenus[shop].forEach((cat, catIndex) => {
                     cat.items.forEach((item, index) => {
                         if(item.name.toLowerCase().includes(query) || cat.category.toLowerCase().includes(query) || shop.toLowerCase().includes(query)) {
                             matchCount++;
-                            let priceHTML = ""; let selectId = `search-select-${shop.replace(/\s/g, '')}-${index}`;
+                            // إنشاء ID فريد تماماً
+                            let priceHTML = ""; let selectId = `search-select-${shop.replace(/\s/g, '')}-${catIndex}-${index}`;
                             if (item.prices) { let options = item.prices.map((p, i) => `<option value="${p}">${item.sizes[i]} - ${p} ج.م</option>`).join(''); priceHTML = `<select id="${selectId}" class="product-price-select">${options}</select>`; } 
                             else priceHTML = `<div class="product-price" id="${selectId}" data-price="${item.price}">${item.price} ج.م</div>`;
                             
@@ -1554,16 +1556,18 @@
             if(matchCount === 0) container.innerHTML = `<div class="empty-state">لا توجد نتائج مطابقة لبحثك</div>`;
         }
 
-        window.openShop = function(shopName) {
+       window.openShop = function(shopName) {
             document.getElementById('shop-title').innerText = shopName; const container = document.getElementById('menu-container'); container.innerHTML = "";
             let folderName = "market";
             if(shopName.includes("تكه")) folderName = "taka"; else if(shopName.includes("الاصدقاء")) folderName = "friends"; else if(shopName.includes("وفليانو")) folderName = "wafeliano"; else if(shopName.includes("الارزاق")) folderName = "arzak"; else if(shopName.includes("كبداكي")) folderName = "kabdaky"; else if(shopName.includes("ابن البلد")) folderName = "ebnalbalad"; else if(shopName.includes("الهندي")) folderName = "hindi";
             
             if (window.shopMenus[shopName]) {
-                window.shopMenus[shopName].forEach(cat => {
+                // تم إضافة catIndex لحل مشكلة تداخل الأسعار
+                window.shopMenus[shopName].forEach((cat, catIndex) => {
                     container.innerHTML += `<div class="menu-category">${cat.category}</div>`;
                     cat.items.forEach((item, index) => {
-                        let priceHTML = ""; let selectId = `select-${shopName.replace(/\s/g, '')}-${index}`;
+                        // إنشاء ID فريد تماماً
+                        let priceHTML = ""; let selectId = `select-${shopName.replace(/\s/g, '')}-${catIndex}-${index}`;
                         if (item.prices) { let options = item.prices.map((p, i) => `<option value="${p}">${item.sizes[i]} - ${p} ج.م</option>`).join(''); priceHTML = `<select id="${selectId}" class="product-price-select">${options}</select>`; } 
                         else priceHTML = `<div class="product-price" id="${selectId}" data-price="${item.price}">${item.price} ج.م</div>`;
                         
